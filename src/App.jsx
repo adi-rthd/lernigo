@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AccountDialog, Settings } from './components/Account.jsx';
-import CheatSheet from './components/CheatSheet.jsx';
-import Leaderboard from './components/Leaderboard.jsx';
+import Game from './components/Game.jsx';
 import Practice from './components/Practice.jsx';
 import Progress from './components/Progress.jsx';
 import { cardsForLevel } from './data/index.js';
@@ -16,8 +15,11 @@ const guestDeck = [
   ...a1Cards.filter(card => card.kind === 'verb').slice(0, 2),
 ];
 
+const lockedTabs = new Set(['leaderboard', 'cheat-sheet']);
+
 const navigation = [
   ['practice', 'Practice'],
+  ['game', 'Game'],
   ['progress', 'Progress'],
   ['leaderboard', 'Leaderboard'],
   ['cheat-sheet', 'Cheat sheet'],
@@ -100,7 +102,8 @@ export default function App() {
         <div className="header-inner">
           <a className="brand" href="#practice" aria-label="Lernigo study home"><span className="brand-mark" aria-hidden="true"><span /></span>Lernigo</a>
           <nav aria-label="Main navigation">
-            {navigation.map(([id, label]) => <a key={id} href={'#' + id} aria-current={page === id ? 'page' : undefined}>{label}</a>)}
+            {navigation.map(([id, label]) => <a key={id} href={'#' + id} aria-current={page === id ? 'page' : undefined}
+              data-locked={lockedTabs.has(id) || undefined} aria-label={lockedTabs.has(id) ? label + ' (locked)' : undefined}>{label}</a>)}
           </nav>
           <button type="button" className="outline account" disabled={saving} onClick={() => setDialogOpen(true)}>{user ? 'Account' : 'Sign in'}</button>
         </div>
@@ -120,8 +123,13 @@ export default function App() {
         {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
           onReview={startReview} saving={saving || locked} />}
-        {page === 'leaderboard' && <Leaderboard key={level} initialLevel={level} user={user} api={api} ready={ready} />}
-        {page === 'cheat-sheet' && <CheatSheet />}
+        <Game active={page === 'game'} user={user} online={ready} name={account.profile?.username} game={api?.game}
+          cards={a1Cards} onSignIn={() => setDialogOpen(true)} />
+        {lockedTabs.has(page) && <section id={page}>
+          <div className="intro"><h1>{navigation.find(([id]) => id === page)[1]}</h1></div>
+          <div className="panel game-panel"><h2>Temporarily locked</h2>
+            <a className="outline" href="#practice">Back to practice</a></div>
+        </section>}
         {page === 'settings' && (user ? <Settings key={learner} level={level} account={account} saving={saving} save={saveSettings} /> :
           <section id="settings">
             <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Sign in to manage your profile and leaderboard settings.</p></div>
@@ -131,7 +139,7 @@ export default function App() {
       <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {
         setReview(null);
-        location.hash = 'practice';
+        if (page !== 'game') location.hash = 'practice';
       }} />}
     </>
   );

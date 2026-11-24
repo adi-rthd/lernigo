@@ -214,3 +214,27 @@ dialog::backdrop { background: #22392f75; }
   .quiz-options { grid-template-columns: 1fr; }
   .settings #types button { font-size: .75rem; }
 }
+
+nav a[data-locked] { color: var(--muted); opacity: .8; }
+nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
+.game-lobby { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 760px; }
+.game-room { display: grid; gap: 12px; max-width: 730px; }
+.game-panel { padding: 18px; }
+.game-panel > h2, .game-panel > p { margin-bottom: 12px; }
+.game-panel p { color: var(--muted); line-height: 1.45; overflow-wrap: anywhere; }
+.game-room-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.game-code { color: var(--forest); letter-spacing: .12em; }
+.game-players, .game-scores { margin: 12px 0; padding: 0; list-style: none; }
+.game-players { display: flex; flex-wrap: wrap; gap: 6px; }
+.game-players li { padding: 4px 8px; border-radius: 5px; background: var(--tint); overflow-wrap: anywhere; }
+.game-scores li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.game-scores li > span:last-child { flex-shrink: 0; }
+.game-scores small { display: block; color: var(--muted); }
+.game-round .game-word { font: clamp(1.9rem, 5vw, 3.6rem)/1.12 Georgia, serif; color: var(--forest-deep); }
+.game-answer { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.game-answer .field { margin: 0; flex: 1 1 170px; }
+.game-error { grid-column: 1/-1; color: var(--wrong); }
+@media (max-width: 690px) {
+  .game-lobby { grid-template-columns: 1fr; }
+  nav { flex-wrap: wrap; gap: 0 9px; justify-content: flex-start; }
+}

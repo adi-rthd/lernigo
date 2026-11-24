@@ -1,3 +1,4 @@
+import { gameFirebase } from './gameFirebase.js';
 import config from './firebase-config.js';
 import { levels } from './study.js';
 
@@ -27,6 +28,7 @@ export async function connectFirebase() {
   }
 
   return {
+    game: gameFirebase(db, store),
     observeUser: (onUser, onError) => auth.onAuthStateChanged(accounts, onUser, onError),
     signIn: (email, password) => auth.signInWithEmailAndPassword(accounts, email, password),
     register: (email, password) => auth.createUserWithEmailAndPassword(accounts, email, password),

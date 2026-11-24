@@ -84,6 +84,108 @@ service cloud.firestore {
       }
     }
 
+    match /lernigoGameAdmins/{uid} {
+      allow get: if ownsLernigoRecord(uid);
+    }
+
+    match /lernigoGameRooms/{code} {
+      function signedIn() {
+        return request.auth != null;
+      }
+
+      function member(room) {
+        return signedIn() && (room.host == request.auth.uid || request.auth.uid in room.players);
+      }
+
+      function host(room) {
+        return signedIn() && room.host == request.auth.uid;
+      }
+
+      function roomPath() {
+        return /databases/$(database)/documents/lernigoGameRooms/$(code);
+      }
+
+      function deadline(room) {
+        return room.startedAt + duration.value(room.seconds, 's');
+      }
+
+      function validNewRoom(room) {
+        return signedIn() && room.host == request.auth.uid
+          && get(/databases/$(database)/documents/lernigoGameAdmins/$(request.auth.uid)).data.enabled == true
+          && room.keys().hasOnly(['code', 'host', 'type', 'seconds', 'players', 'phase', 'round', 'createdAt', 'startedAt'])
+          && code.matches('^[2-9A-HJ-NP-Z]{6}$') && room.code == code
+          && room.type in ['mixed', 'articles', 'nouns', 'verbs']
+          && room.seconds is int && room.seconds >= 5 && room.seconds <= 60
+          && room.players is map && room.players.size() == 0
+          && room.phase == 'lobby' && room.round == 0
+          && room.createdAt == request.time && room.startedAt == null;
+      }
+
+      function updatePlayers(previous, next) {
+        let uid = request.auth.uid;
+        let name = next.players.get(uid, '');
+        return previous.phase == 'lobby' && !host(previous) && next.players is map
+          && next.diff(previous).affectedKeys().hasOnly(['players'])
+          && next.players.diff(previous.players).affectedKeys().hasOnly([uid])
+          && ((!(uid in previous.players) && uid in next.players && next.players.size() <= 10
+              && name is string && name.size() >= 1 && name.size() <= 24)
+            || (uid in previous.players && !(uid in next.players)));
+      }
+
+      function startRound(previous, next) {
+        let id = string(next.round);
+        let roundPath = /databases/$(database)/documents/lernigoGameRooms/$(code)/rounds/$(id);
+        return host(previous) && previous.players.size() > 0 && previous.phase in ['lobby', 'results']
+          && next.diff(previous).affectedKeys().hasOnly(['phase', 'round', 'startedAt'])
+          && next.phase == 'playing' && next.round == previous.round + 1 && next.round <= 10
+          && next.startedAt == request.time && !exists(roundPath)
+          && getAfter(roundPath).data.startedAt == request.time;
+      }
+
+      function revealRound(previous, next) {
+        return member(previous) && previous.phase == 'playing' && request.time >= deadline(previous)
+          && next.diff(previous).affectedKeys().hasOnly(['phase'])
+          && next.phase == (previous.round == 10 ? 'finished' : 'results');
+      }
+
+      allow get: if signedIn() && (resource == null || resource.data.phase == 'lobby' || member(resource.data));
+      allow create: if validNewRoom(request.resource.data);
+      allow update: if signedIn() && (updatePlayers(resource.data, request.resource.data)
+        || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data));
+
+      match /rounds/{roundId} {
+        allow read: if member(get(roomPath()).data);
+        allow create: if host(get(roomPath()).data)
+          && roundId.matches('^([1-9]|10)$')
+          && request.resource.data.keys().hasOnly(['cardId', 'startedAt'])
+          && request.resource.data.cardId is string && request.resource.data.cardId.matches('^[0-9a-f]{16}$')
+          && request.resource.data.startedAt == request.time
+          && getAfter(roomPath()).data.phase == 'playing'
+          && getAfter(roomPath()).data.round == int(roundId)
+          && getAfter(roomPath()).data.startedAt == request.time;
+
+        match /guesses/{uid} {
+          function guessesRevealed(room) {
+            return member(room) && (int(roundId) < room.round
+              || (int(roundId) == room.round && room.phase in ['results', 'finished']));
+          }
+
+          function canGuess(room) {
+            let guess = request.resource.data;
+            return ownsLernigoRecord(uid) && uid in room.players
+              && room.phase == 'playing' && int(roundId) == room.round && request.time < deadline(room)
+              && guess.keys().hasOnly(['answer', 'submittedAt'])
+              && guess.answer is string && guess.answer.size() >= 1 && guess.answer.size() <= 120
+              && guess.submittedAt == request.time;
+          }
+
+          allow get: if (ownsLernigoRecord(uid) && member(get(roomPath()).data)) || guessesRevealed(get(roomPath()).data);
+          allow list: if guessesRevealed(get(roomPath()).data);
+          allow create: if canGuess(get(roomPath()).data);
+        }
+      }
+    }
+
     match /lernigoLeaderboards/{level}/entries/{uid} {
       function matchesScoreAndProfile() {
         let profile = getAfter(/databases/$(database)/documents/wortdeckUsers/$(uid)).data;
@@ -92,8 +194,6 @@ service cloud.firestore {
         return profile.listed == true && entry.keys().hasOnly(['alias', 'points'])
           && entry.alias == profile.alias && entry.points == score.points;
       }
-      allow get: if request.auth != null && isLernigoLevel(level);
-      allow list: if request.auth != null && isLernigoLevel(level) && request.query.limit <= 25;
       allow create, update: if ownsLernigoRecord(uid) && isLernigoLevel(level) && matchesScoreAndProfile();
       allow delete: if ownsLernigoRecord(uid) && isLernigoLevel(level);
     }
