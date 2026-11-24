@@ -174,7 +174,7 @@ function GameRoom({ code, uid, game, cards, onExit }) {
   const currentRound = rounds[room.round];
   const card = cards.find(card => card.id === currentRound?.cardId);
   const prompt = card && gamePrompt(card, room.type, room.round);
-  const scores = players.map(([player, name]) => {
+  const scores = [[room.host, 'Host'], ...players].map(([player, name]) => {
     let points = 0;
     for (const [index, guesses] of Object.entries(results)) {
       const card = cards.find(card => card.id === rounds[index]?.cardId);
@@ -187,7 +187,7 @@ function GameRoom({ code, uid, game, cards, onExit }) {
     <div className="game-room">
       <div className="panel game-panel game-room-heading">
         <div><h2>Room <span className="game-code">{code}</span></h2>
-          <p>{gameTypes[room.type]} · {room.seconds}s per question · {players.length}/{gameSeats} players</p></div>
+          <p>{gameTypes[room.type]} · {room.seconds}s per question · {players.length}/{gameSeats} guests + host</p></div>
         <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
           if (!host && room.phase === 'lobby') await game.leave(code, uid);
           onExit();
@@ -208,7 +208,7 @@ function GameRoom({ code, uid, game, cards, onExit }) {
         }} />}
 
       {room.phase === 'playing' && (prompt
-        ? <TimedRound key={room.round} {...{ room, prompt, code, host, uid, game }} />
+        ? <TimedRound key={room.round} {...{ room, prompt, code, uid, game }} />
         : <div className="panel game-panel"><p role="status">Loading the question…</p></div>)}
 
       {(room.phase === 'results' || room.phase === 'finished') && <div className="panel game-panel">
@@ -233,7 +233,7 @@ function GameRoom({ code, uid, game, cards, onExit }) {
   );
 }
 
-function TimedRound({ room, prompt, code, host, uid, game }) {
+function TimedRound({ room, prompt, code, uid, game }) {
   const [now, setNow] = useState(Date.now);
   const [guess, setGuess] = useState('');
   const [submitted, setSubmitted] = useState('');
@@ -248,10 +248,9 @@ function TimedRound({ room, prompt, code, host, uid, game }) {
   }, []);
 
   useEffect(() => {
-    if (host) return;
     return game.watchGuess(code, room.round, uid, answer => { if (answer) setSubmitted(answer); },
       error => setError(gameError(error)));
-  }, [code, game, host, room.round, uid]);
+  }, [code, game, room.round, uid]);
 
   useEffect(() => {
     if (remaining) return;
@@ -294,7 +293,6 @@ function TimedRound({ room, prompt, code, host, uid, game }) {
       <p>{prompt.instruction}</p>
       {!remaining ? <p role="status">Time’s up. Loading results…</p>
         : submitted ? <p role="status">Guess saved. Results appear when time runs out.</p>
-        : host ? <p>Players are entering their guesses.</p>
         : <form className="game-answer" onSubmit={submit}>
           <label className="field">Your guess
             <input value={guess} onChange={event => setGuess(event.target.value)} maxLength={120}

@@ -178,7 +178,7 @@ service cloud.firestore {
 
           function canGuess(room) {
             let guess = request.resource.data;
-            return ownsLernigoRecord(uid) && uid in room.players
+            return ownsLernigoRecord(uid) && member(room)
               && room.phase == 'playing' && int(roundId) == room.round && request.time < deadline(room)
               && guess.keys().hasOnly(['answer', 'submittedAt'])
               && guess.answer is string && guess.answer.size() >= 1 && guess.answer.size() <= 120
