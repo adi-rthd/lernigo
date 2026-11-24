@@ -2,15 +2,14 @@ import config from './firebase-config.js';
 import { levels } from './study.js';
 
 export const configured = Boolean(config?.apiKey && config?.projectId && config?.appId);
-const sdkUrl = 'https://www.gstatic.com/firebasejs/13.3.0/';
 
 export async function connectFirebase() {
   const [app, auth, store] = await Promise.all([
-    import(sdkUrl + 'firebase-app.js'),
-    import(sdkUrl + 'firebase-auth.js'),
-    import(sdkUrl + 'firebase-firestore.js'),
+    import('firebase/app'),
+    import('firebase/auth'),
+    import('firebase/firestore'),
   ]);
-  const firebase = app.initializeApp(config);
+  const firebase = app.getApps().length ? app.getApp() : app.initializeApp(config);
   const accounts = auth.getAuth(firebase);
   const db = store.getFirestore(firebase);
   const profileRef = uid => store.doc(db, 'wortdeckUsers', uid);
@@ -26,7 +25,7 @@ export async function connectFirebase() {
   }
 
   return {
-    observeUser: onUser => auth.onAuthStateChanged(accounts, onUser),
+    observeUser: (onUser, onError) => auth.onAuthStateChanged(accounts, onUser, onError),
     signIn: (email, password) => auth.signInWithEmailAndPassword(accounts, email, password),
     register: (email, password) => auth.createUserWithEmailAndPassword(accounts, email, password),
     reset: email => auth.sendPasswordResetEmail(accounts, email),

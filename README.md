@@ -1,12 +1,23 @@
 # Lernigo
 
-Lernigo is a static German vocabulary study app. The published site stays private. For local development, serve the web files over HTTP, for example `python -m http.server 8000 --directory dist`.
+Lernigo is a German vocabulary study app built with React and Vite. The published site stays private.
+
+## Run locally
+
+Use Node.js 20.19+ on Node 20, or Node.js 22.12 or later.
+
+```sh
+npm ci
+npm run dev
+```
+
+Run `npm run build` to create the production site in `dist/`. Run `npm run preview` to serve that build locally. React components are in `src/components/`, vocabulary is in `src/data/`, and the original cheat sheet is in `public/assets/`.
 
 The complete A1 deck comes from the supplied workbook. A2, B1, B2 and C1 have 12 original starter cards each. The A1 PDF is available under Cheat sheet. A1 keeps its original card IDs and storage paths.
 
 ## Firebase setup
 
-The app uses the `lernigo-1` public web SDK configuration. Enable Email/Password in Firebase Authentication and add the published hostname to Authentication → Settings → Authorized domains if you use it for Auth redirects.
+The app uses the `lernigo-1` public web SDK configuration in `src/firebase-config.js`. Enable Email/Password in Firebase Authentication and add the published hostname to Authentication → Settings → Authorized domains if you use it for Auth redirects.
 
 Enable Cloud Firestore in production mode. In the Firebase console, merge the functions and match blocks from `firestore.rules` inside the existing `match /databases/{database}/documents` block. Preserve rules for other applications and review any broad matching grants that could also reach the Lernigo collections. Publish the result. For a project dedicated to Lernigo, publish the file as-is using `firebase deploy --only firestore:rules --project lernigo-1`.
 

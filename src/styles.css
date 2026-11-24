@@ -18,7 +18,8 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { min-height: 100vh; display: flex; flex-direction: column; margin: 0; background: var(--ivory); color: var(--ink); }
+body { margin: 0; background: var(--ivory); color: var(--ink); }
+#root { min-height: 100vh; display: flex; flex-direction: column; }
 a { color: inherit; text-decoration: none; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
