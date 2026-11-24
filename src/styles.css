@@ -324,7 +324,10 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
   .game-lobby { grid-template-columns: 1fr; }
 }
 
-.read-chapter { display: grid; gap: 6px; max-width: 230px; margin-bottom: 16px; }
+.read-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; max-width: 620px; margin-bottom: 16px; }
+.read-controls .field { display: grid; gap: 6px; margin: 0; }
+.read-controls .field:first-child { flex: 1 1 270px; min-width: 0; }
+.read-search-status { margin: 0 0 12px; }
 .read-lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
 .read-list { padding: 16px; overflow-wrap: anywhere; }
 .read-list h2 span { color: var(--muted); font-size: .85em; }

@@ -3,10 +3,18 @@ import { english, german } from '../study.js';
 
 const collator = new Intl.Collator('de');
 
+function searchText(text) {
+  return text.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replaceAll('ß', 'ss');
+}
+
 export default function Read({ cards }) {
   const [chapter, setChapter] = useState(1);
+  const [search, setSearch] = useState('');
+  const query = searchText(search.trim());
   const chapters = [...new Set(cards.flatMap(card => card.chapters))].sort((a, b) => a - b);
-  const words = cards.filter(card => card.chapters.includes(chapter))
+  const words = cards.filter(card => query
+    ? [german(card), english(card)].some(text => searchText(text).includes(query))
+    : card.chapters.includes(chapter))
     .sort((a, b) => collator.compare(a.word, b.word));
 
   return (
@@ -16,21 +24,31 @@ export default function Read({ cards }) {
         <h1>Read</h1>
         <p>Browse German nouns and verbs with their English meanings.</p>
       </div>
-      <label className="field read-chapter">
-        Chapter
-        <select value={chapter} onChange={event => setChapter(Number(event.target.value))}>
-          {chapters.map(number => <option key={number} value={number}>Chapter {number}</option>)}
-        </select>
-      </label>
-      <div className="read-lists">
-        <WordList title="Nouns" words={words.filter(card => card.kind === 'noun')} />
-        <WordList title="Verbs" words={words.filter(card => card.kind === 'verb')} />
+      <div className="read-controls">
+        <label className="field">
+          Search vocabulary
+          <input type="search" value={search} placeholder="German word or English meaning"
+            onChange={event => setSearch(event.target.value)} />
+        </label>
+        <label className="field">
+          Chapter
+          <select value={chapter} disabled={!!query} onChange={event => setChapter(Number(event.target.value))}>
+            {chapters.map(number => <option key={number} value={number}>Chapter {number}</option>)}
+          </select>
+        </label>
       </div>
+      <p className="message read-search-status" role="status">{query && (words.length
+        ? words.length + (words.length === 1 ? ' match' : ' matches') + ' across all chapters'
+        : 'No matching words across all chapters.')}</p>
+      {(!query || words.length > 0) && <div className="read-lists">
+        <WordList title="Nouns" words={words.filter(card => card.kind === 'noun')} searching={!!query} />
+        <WordList title="Verbs" words={words.filter(card => card.kind === 'verb')} searching={!!query} />
+      </div>}
     </section>
   );
 }
 
-function WordList({ title, words }) {
+function WordList({ title, words, searching }) {
   return (
     <section className="panel read-list" aria-label={title}>
       <h2>{title} <span>({words.length})</span></h2>
@@ -43,7 +61,7 @@ function WordList({ title, words }) {
             </div>
           ))}
         </dl>
-      ) : <p className="empty-text">No {title.toLowerCase()} in this chapter.</p>}
+      ) : <p className="empty-text">No {title.toLowerCase()} {searching ? 'match this search.' : 'in this chapter.'}</p>}
     </section>
   );
 }
