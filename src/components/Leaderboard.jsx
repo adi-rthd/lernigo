@@ -8,12 +8,17 @@ export default function Leaderboard({ initialLevel, user, api, ready }) {
   useEffect(() => {
     if (!uid || !api) return;
     let active = true;
+    const timer = setTimeout(() => {
+      if (active) setResults({ level, uid, error: true });
+    }, 5000);
     const stop = api.watchLeaderboard(level, entries => {
+      clearTimeout(timer);
       if (active) setResults({ level, uid, entries });
     }, () => {
+      clearTimeout(timer);
       if (active) setResults({ level, uid, error: true });
     });
-    return () => { active = false; stop(); };
+    return () => { active = false; clearTimeout(timer); stop(); };
   }, [api, level, uid]);
 
   const board = results?.level === level && results?.uid === uid ? results : null;

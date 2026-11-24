@@ -9,10 +9,20 @@ service cloud.firestore {
       return level in ['A1', 'A2', 'B1', 'B2', 'C1'];
     }
 
+    function validIdentity(profile) {
+      let fields = ['firstName', 'lastName', 'username'];
+      return !profile.keys().hasAny(fields)
+        || (profile.keys().hasAll(fields)
+          && profile.firstName is string && profile.firstName.size() >= 1 && profile.firstName.size() <= 60
+          && profile.lastName is string && profile.lastName.size() >= 1 && profile.lastName.size() <= 60
+          && profile.username is string && profile.username.matches('^[a-z0-9_]{3,24}$'));
+    }
+
     match /wortdeckUsers/{uid} {
       allow read: if ownsLernigoRecord(uid);
       allow create, update: if ownsLernigoRecord(uid)
-        && request.resource.data.keys().hasOnly(['level', 'listed', 'alias'])
+        && request.resource.data.keys().hasOnly(['level', 'listed', 'alias', 'firstName', 'lastName', 'username'])
+        && validIdentity(request.resource.data)
         && isLernigoLevel(request.resource.data.level)
         && request.resource.data.listed is bool
         && request.resource.data.alias is string

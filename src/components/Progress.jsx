@@ -8,13 +8,13 @@ const filters = [
   ['new', 'Not yet studied', 'You’ve studied every word in the deck.'],
 ];
 
-export default function Progress({ level, cards, records, synced, status, onReview, saving }) {
+export default function Progress({ level, cards, records, source, onReview, saving }) {
   const [filter, setFilter] = useState('all');
   const studied = cards.filter(card => records[card.id]);
   const right = studied.filter(card => records[card.id].last === 'right');
   const wrong = studied.filter(card => records[card.id].last === 'wrong');
   const fresh = cards.filter(card => !records[card.id]);
-  const rows = status ? [] : { all: studied, right, wrong, new: fresh }[filter];
+  const rows = { all: studied, right, wrong, new: fresh }[filter];
 
   return (
     <section id="progress">
@@ -26,13 +26,13 @@ export default function Progress({ level, cards, records, synced, status, onRevi
           ['Needs practice', wrong.length, ' metric-wrong'],
           ['Not yet studied', fresh.length, ''],
         ].map(([label, count, style]) => <div className={'panel metric' + style} key={label}>
-          <span>{label}</span><strong>{status ? '–' : count}</strong>
+          <span>{label}</span><strong>{count}</strong>
         </div>)}
       </div>
       <div className="panel results">
         <div className="results-bar">
-          <div><h2>Word history</h2><p>{status || (synced ? 'Synced with Firebase' : 'Guest progress on this browser')}</p></div>
-          <button type="button" className="primary" disabled={saving || !!status || !wrong.length} onClick={() => onReview(wrong)}>
+          <div><h2>Word history</h2><p>{source}</p></div>
+          <button type="button" className="primary" disabled={saving || !wrong.length} onClick={() => onReview(wrong)}>
             Review missed cards
           </button>
         </div>
@@ -50,7 +50,7 @@ export default function Progress({ level, cards, records, synced, status, onRevi
               </tr>;
             })}</tbody>
           </table>
-        </div> : <p className="empty-text">{status || filters.find(([id]) => id === filter)[2]}</p>}
+        </div> : <p className="empty-text">{filters.find(([id]) => id === filter)[2]}</p>}
       </div>
     </section>
   );

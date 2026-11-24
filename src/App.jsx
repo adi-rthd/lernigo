@@ -5,7 +5,15 @@ import Leaderboard from './components/Leaderboard.jsx';
 import Practice from './components/Practice.jsx';
 import Progress from './components/Progress.jsx';
 import { cardsForLevel } from './data/index.js';
-import { guestLevelKey, guestProgressKey, readGuestLevel, readGuestProgress, useAccount } from './useAccount.js';
+import {
+  addAnswer, guestAttemptsKey, guestLimit, guestProgressKey, readGuestAttempts, readGuestProgress, useAccount, writeLocal,
+} from './useAccount.js';
+
+const a1Cards = cardsForLevel('A1');
+const guestDeck = [
+  ...a1Cards.filter(card => card.kind === 'noun').slice(0, 3),
+  ...a1Cards.filter(card => card.kind === 'verb').slice(0, 2),
+];
 
 const navigation = [
   ['practice', 'Practice'],
@@ -22,16 +30,17 @@ function currentPage() {
 
 export default function App() {
   const account = useAccount();
-  const { user, ready, api, profileLoading } = account;
+  const { user, ready, api } = account;
   const [page, setPage] = useState(currentPage);
-  const [guestLevel, setGuestLevel] = useState(readGuestLevel);
+  const [guestAttempts, setGuestAttempts] = useState(readGuestAttempts);
   const [guestProgress, setGuestProgress] = useState(readGuestProgress);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [review, setReview] = useState(null);
   const [saving, setSaving] = useState(false);
-  const level = user ? account.level : guestLevel;
+  const level = user ? account.level : 'A1';
+  const locked = !user && guestAttempts >= guestLimit;
   const learner = user?.uid ?? 'guest';
-  const cards = useMemo(() => cardsForLevel(level), [level]);
+  const cards = useMemo(() => user ? cardsForLevel(level) : guestDeck, [level, user]);
 
   useEffect(() => {
     function navigate() {
@@ -39,7 +48,7 @@ export default function App() {
       window.scrollTo(0, 0);
     }
     function syncGuest(event) {
-      if (event.key === guestLevelKey || event.key === null) setGuestLevel(readGuestLevel());
+      if (event.key === guestAttemptsKey || event.key === null) setGuestAttempts(readGuestAttempts());
       if (event.key === guestProgressKey || event.key === null) setGuestProgress(readGuestProgress());
     }
     window.addEventListener('hashchange', navigate);
@@ -51,33 +60,27 @@ export default function App() {
   }, []);
 
   async function track(card, result, inQuiz) {
-    if (user) {
-      await api.grade(user.uid, card, result, inQuiz);
+    if (user) return account.grade(card, result, inQuiz);
+
+    const count = Math.max(guestAttempts, readGuestAttempts());
+    if (count >= guestLimit) {
+      setGuestAttempts(guestLimit);
+      setDialogOpen(true);
       return;
     }
-    const previous = guestProgress[card.id];
-    const updated = {
-      ...guestProgress,
-      [card.id]: {
-        right: (previous?.right ?? 0) + Number(result === 'right'),
-        wrong: (previous?.wrong ?? 0) + Number(result === 'wrong'),
-        last: result,
-      },
-    };
+
+    const updated = { ...guestProgress, [card.id]: addAnswer(guestProgress[card.id], result) };
     setGuestProgress(updated);
-    try {
-      localStorage.setItem(guestProgressKey, JSON.stringify(updated));
-    } catch {
-      return 'Browser storage is unavailable. This answer is saved for this visit.';
-    }
+    const next = count + 1;
+    const attemptsSaved = writeLocal(guestAttemptsKey, next);
+    const progressSaved = writeLocal(guestProgressKey, updated);
+    setGuestAttempts(next);
+    if (next === guestLimit) setDialogOpen(true);
+    if (!attemptsSaved || !progressSaved) return 'Browser storage is unavailable. This answer is saved for this visit.';
   }
 
-  async function saveSettings(settings) {
-    if (user) await account.saveProfile(settings);
-    else {
-      localStorage.setItem(guestLevelKey, settings.level);
-      setGuestLevel(settings.level);
-    }
+  function saveSettings(settings) {
+    account.saveProfile(settings);
     if (settings.level !== level) setReview(null);
   }
 
@@ -100,14 +103,27 @@ export default function App() {
         </div>
       </header>
       <main>
-        <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards}
-          track={track} ready={ready} profileLoading={profileLoading} saving={saving} setSaving={setSaving}
-          review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />
+        {locked ? <section id="practice" hidden={page !== 'practice'}>
+          <div className="intro"><p className="kicker">German vocabulary</p><h1>Practice</h1></div>
+          <div className="panel end-state">
+            <h2>You’ve finished your five guest cards</h2>
+            <p>Sign in or create an account to keep practising.</p>
+            <div className="end-actions"><button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in to continue</button></div>
+          </div>
+        </section> : <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards}
+          track={track} ready={ready} saving={saving} setSaving={setSaving}
+          guestRemaining={!user ? guestLimit - guestAttempts : null} quizCandidates={!user ? a1Cards : null}
+          review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />}
         {page === 'progress' && <Progress level={level} cards={cards} records={user ? account.progress : guestProgress}
-          synced={!!user} status={user ? account.progressMessage : ''} onReview={startReview} saving={saving} />}
+          source={user ? account.progressMessage : 'Guest progress on this browser'}
+          onReview={startReview} saving={saving || locked} />}
         {page === 'leaderboard' && <Leaderboard key={level} initialLevel={level} user={user} api={api} ready={ready} />}
         {page === 'cheat-sheet' && <CheatSheet />}
-        {page === 'settings' && <Settings key={learner} level={level} account={account} saving={saving} save={saveSettings} />}
+        {page === 'settings' && (user ? <Settings key={learner} level={level} account={account} saving={saving} save={saveSettings} /> :
+          <section id="settings">
+            <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Sign in to choose a study level and manage your profile.</p></div>
+            <button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in</button>
+          </section>)}
       </main>
       <footer><span>Lernigo</span><span>German vocabulary · A1–C1</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {

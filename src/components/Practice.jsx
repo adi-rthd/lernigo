@@ -19,7 +19,7 @@ function Options({ label, value, items, onChange, disabled }) {
   );
 }
 
-export default function Practice({ active, level, cards, track, review, onExitReview, ready, profileLoading, saving, setSaving }) {
+export default function Practice({ active, level, cards, quizCandidates, track, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
   const [mode, setMode] = useState('flash');
   const [type, setType] = useState('all');
   const [chapter, setChapter] = useState('all');
@@ -51,14 +51,17 @@ export default function Practice({ active, level, cards, track, review, onExitRe
       <div className="intro practice-intro">
         <p className="kicker">German vocabulary <span className="intro-level">{level}</span></p>
         <h1>Practice</h1>
-        <p>{level === 'A1' ? 'Nouns and verbs from chapters 1–12.' : level + ' starter deck · ' + cards.length + ' words.'}</p>
+        <p>{guestRemaining === null
+          ? level === 'A1' ? 'Nouns and verbs from chapters 1–12.' : level + ' starter deck · ' + cards.length + ' words.'
+          : 'Guest practice · ' + guestRemaining + (guestRemaining === 1 ? ' answer left' : ' answers left')}
+        </p>
       </div>
       <div className="layout">
         <aside className="settings">
           <h2>Study options</h2>
           <Options label="Practice mode" items={modes} value={mode} onChange={value => { if (mode !== value) changeFilter(setMode, value); }} disabled={saving} />
           <Options label="Word type" items={types} value={type} onChange={value => { if (type !== value) changeFilter(setType, value); }} disabled={saving || !!review} />
-          <label className="field" id="chapter-field" hidden={level !== 'A1'}>
+          <label className="field" id="chapter-field" hidden={level !== 'A1' || guestRemaining !== null}>
             Chapter
             <select value={chapter} onChange={event => changeFilter(setChapter, event.target.value)} disabled={saving || !!review}>
               <option value="all">All chapters</option>
@@ -90,10 +93,9 @@ export default function Practice({ active, level, cards, track, review, onExitRe
               </button>
             </div>
           )}
-          {profileLoading ? <p role="status">Loading your study level…</p> :
-            <Session key={round + ':' + (review?.id ?? '')} {...{
-              active, deck, mode, direction, track, ready, saving, setSaving, setDirectionLocked,
-            }} candidates={cards} onRestart={reset} />}
+          <Session key={round + ':' + (review?.id ?? '')} {...{
+            active, deck, mode, direction, track, ready, saving, setSaving, setDirectionLocked,
+          }} candidates={quizCandidates ?? cards} onRestart={reset} />
         </div>
       </div>
     </section>

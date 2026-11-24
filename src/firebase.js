@@ -18,9 +18,11 @@ export async function connectFirebase() {
   const boardCollection = level => store.collection(db, 'lernigoLeaderboards', level, 'entries');
   const boardRef = (uid, level) => store.doc(boardCollection(level), uid);
 
-  function watch(target, read, onResult, onError) {
+  function watch(target, read, onResult, onError, includeCacheStatus = false) {
     return store.onSnapshot(target, { includeMetadataChanges: true }, snapshot => {
-      if (!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites) onResult(read(snapshot));
+      if (snapshot.metadata.hasPendingWrites) return;
+      if (!snapshot.metadata.fromCache) onResult(read(snapshot), true);
+      else if (includeCacheStatus) onResult(undefined, false);
     }, onError);
   }
 
@@ -31,8 +33,11 @@ export async function connectFirebase() {
     reset: email => auth.sendPasswordResetEmail(accounts, email),
     signOut: () => auth.signOut(accounts),
     watch: (uid, onProgress, onError) => watch(cardCollection(uid),
-      snapshot => Object.fromEntries(snapshot.docs.map(doc => [doc.id, doc.data()])), onProgress, onError),
-    watchProfile: (uid, onProfile, onError) => watch(profileRef(uid), snapshot => snapshot.data(), onProfile, onError),
+      snapshot => Object.fromEntries(snapshot.docs.map(doc => {
+        const { updatedAt, ...data } = doc.data();
+        return [doc.id, { ...data, at: updatedAt?.toMillis() ?? 0 }];
+      })), onProgress, onError, true),
+    watchProfile: (uid, onProfile, onError) => watch(profileRef(uid), snapshot => snapshot.data(), onProfile, onError, true),
     watchLeaderboard: (level, onBoard, onError) => watch(
       store.query(boardCollection(level), store.orderBy('points', 'desc'), store.limit(25)),
       snapshot => snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })), onBoard, onError,

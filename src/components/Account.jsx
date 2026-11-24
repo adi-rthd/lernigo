@@ -1,16 +1,44 @@
 import { useEffect, useRef, useState } from 'react';
 import { levels } from '../study.js';
 
+const usernamePattern = '[A-Za-z0-9_]{3,24}';
+
+function normalizedIdentity(fields) {
+  return {
+    firstName: fields.firstName.trim(),
+    lastName: fields.lastName.trim(),
+    username: fields.username.trim().toLowerCase(),
+  };
+}
+
+function IdentityFields({ value, onChange, required = false, disabled }) {
+  return <>
+    {[
+      ['firstName', 'First name', 'given-name', 60],
+      ['lastName', 'Last name', 'family-name', 60],
+      ['username', 'Username', 'username', 24],
+    ].map(([name, label, autoComplete, maxLength]) => <label className="field" key={name}>
+      {label}
+      <input type="text" name={name} autoComplete={autoComplete} maxLength={maxLength} required={required} disabled={disabled}
+        pattern={name === 'username' ? usernamePattern : undefined}
+        title={name === 'username' ? 'Use 3–24 letters, numbers, or underscores.' : undefined}
+        {...(onChange && { value: value[name] ?? '', onChange: event => onChange(name, event.target.value) })} />
+    </label>)}
+  </>;
+}
+
 function LevelOptions() {
   return levels.map(level => <option key={level} value={level}>{level}</option>);
 }
 
 export function Settings({ level, account, saving, save }) {
-  const { user, profile, profileLoading, profileMessage, ready } = account;
+  const { profile, profileMessage, ready } = account;
   const [preferences, setPreferences] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-  const settings = preferences ?? { level, listed: !!profile?.listed, alias: profile?.alias ?? '' };
+  const settings = preferences ?? { level, listed: !!profile?.listed, alias: profile?.alias ?? '',
+    firstName: profile?.firstName ?? '', lastName: profile?.lastName ?? '', username: profile?.username ?? '',
+  };
 
   function change(name, value) {
     setPreferences({ ...settings, [name]: value });
@@ -25,10 +53,16 @@ export function Settings({ level, account, saving, save }) {
       setMessage('Enter a leaderboard name with at least two characters.');
       return;
     }
+    const identity = normalizedIdentity(settings);
+    const hasIdentity = Object.values(identity).some(Boolean);
+    if (hasIdentity && Object.values(identity).some(value => !value)) {
+      setMessage('Enter a first name, last name, and username.');
+      return;
+    }
     setBusy(true);
     try {
-      await save({ ...settings, alias });
-      setMessage('Settings saved. Your study level is ' + settings.level + '.');
+      await save({ level: settings.level, listed: settings.listed, alias, ...(hasIdentity ? identity : {}) });
+      setMessage('Settings saved.');
       setPreferences(null);
     } catch {
       setMessage('Couldn’t save your settings. Try again.');
@@ -41,16 +75,18 @@ export function Settings({ level, account, saving, save }) {
     <section id="settings">
       <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Choose your study level and how you appear on the leaderboard.</p></div>
       <form className="panel preferences" onSubmit={submit}>
+        <h2>Profile</h2>
+        <IdentityFields value={settings} onChange={change} disabled={busy} />
         <h2>Study level</h2>
         <label className="field">
           German level
-          <select name="level" required value={settings.level} disabled={busy || profileLoading} onChange={event => change('level', event.target.value)}>
+          <select name="level" required value={settings.level} disabled={busy} onChange={event => change('level', event.target.value)}>
             <LevelOptions />
           </select>
         </label>
-        {user ? <div id="board-preferences">
+        <div id="board-preferences">
           <h2>Leaderboard</h2>
-          <label className="check"><input type="checkbox" name="listed" checked={settings.listed} disabled={busy || profileLoading}
+          <label className="check"><input type="checkbox" name="listed" checked={settings.listed} disabled={busy}
             onChange={event => change('listed', event.target.checked)} /> Show my scores on the leaderboards</label>
           {settings.listed && <label className="field">
             Leaderboard name
@@ -58,9 +94,9 @@ export function Settings({ level, account, saving, save }) {
               value={settings.alias} disabled={busy} onChange={event => change('alias', event.target.value)} />
             <span className="field-hint">Use a nickname. Signed-in learners can see it.</span>
           </label>}
-        </div> : <p id="settings-guest" className="field-hint">Sign in to sync your settings and join a leaderboard.</p>}
-        <button className="primary" type="submit" disabled={busy || saving || !ready || profileLoading}>Save settings</button>
-        <p className="message" aria-live="polite">{message || (profileLoading ? 'Loading your settings…' : profileMessage)}</p>
+        </div>
+        <button className="primary" type="submit" disabled={busy || saving || !ready}>Save settings</button>
+        <p className="message" aria-live="polite">{profileMessage && message === 'Settings saved.' ? profileMessage : message || profileMessage}</p>
       </form>
     </section>
   );
@@ -107,9 +143,14 @@ export function AccountDialog({ account, onClose, onRegistered }) {
     const fields = new FormData(event.currentTarget);
     const email = fields.get('email').trim();
     const password = fields.get('password');
+    const identity = registering ? normalizedIdentity(Object.fromEntries(fields)) : null;
+    if (identity && Object.values(identity).some(value => !value)) {
+      setMessage('Enter a first name, last name, and username.');
+      return;
+    }
     void perform(async () => {
       if (registering) {
-        await account.register(email, password, fields.get('level'));
+        await account.register(email, password, fields.get('level'), identity);
         onRegistered();
       } else {
         await api.signIn(email, password);
@@ -124,9 +165,10 @@ export function AccountDialog({ account, onClose, onRegistered }) {
         <h2 id="auth-title">{user ? 'Your account' : registering ? 'Create an account' : 'Sign in to Lernigo'}</h2>
         <button className="outline small" type="button" aria-label="Close dialog" disabled={busy} onClick={onClose}>×</button>
       </div>
-      <p id="auth-description">{user ? user.email : !ready ? 'Connecting to Firebase…'
+      <p id="auth-description">{user ? account.profile?.username ? '@' + account.profile.username + ' · ' + user.email : user.email : !ready ? 'Connecting to Firebase…'
         : api ? 'Sign in to sync your practice and settings across devices.' : 'Firebase could not connect. Reload this page to try again.'}</p>
       {api && ready && !user && <form id="auth-form" onSubmit={submit}>
+        {registering && <IdentityFields required disabled={busy} />}
         <label className="field">Email<input type="email" name="email" autoComplete="email" required /></label>
         <label className="field">Password<input type="password" name="password"
           autoComplete={registering ? 'new-password' : 'current-password'} minLength={registering ? 6 : undefined} required /></label>
