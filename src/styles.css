@@ -188,6 +188,12 @@ kbd { font-family: inherit; font-size: .74rem; border: 1px solid var(--line); bo
 .quiz-options button[data-result=right] { border-color: var(--correct-line); background: var(--tint); color: var(--forest-deep); }
 .quiz-options button[data-result=wrong] { border-color: var(--coral); background: var(--wrong-bg); color: var(--wrong); }
 .quiz-feedback { margin-top: 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.answer-details { padding: 12px 14px; margin-top: 12px; overflow-wrap: anywhere; }
+.answer-details-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.answer-details-header strong { color: var(--forest-deep); font-size: 1.13rem; }
+.answer-details dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 10px; margin: 10px 0 0; }
+.answer-details dt { font-size: .82rem; font-weight: 650; color: var(--muted); }
+.answer-details dd { margin: 3px 0 0; line-height: 1.45; }
 .quiz-feedback p { line-height: 1.35; font-weight: 650; }
 .message { color: var(--muted); margin-top: 9px; font-size: .88rem; line-height: 1.4; }
 .message:empty { display: none; }

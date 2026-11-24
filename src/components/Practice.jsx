@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import AnswerDetails from './AnswerDetails.jsx';
 import { choicesFor, english, german, shuffle } from '../study.js';
 
 const modes = [['flash', 'Flashcards'], ['mcq', 'Multiple choice']];
@@ -234,11 +235,11 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
       </div>
       {!unansweredOnly && <progress value={graded} max={total || 1} aria-label="Cards answered in this round" />}
       {card && !quiz && (
-        <Flashcard card={card} direction={direction} flipped={flipped} flip={flip} focus={flashButton}
+        <Flashcard card={card} active={active} direction={direction} flipped={flipped} flip={flip} focus={flashButton}
           record={record} saving={saving} ready={ready} />
       )}
       {card && quiz && (
-        <Quiz {...{ card, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton }}
+        <Quiz {...{ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton }}
           pick={choice => void record(choice.correct ? 'right' : 'wrong', choice)}
           onNext={() => answerSaved ? next() : void record(answer.correct ? 'right' : 'wrong', answer)} />
       )}
@@ -263,7 +264,7 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
   );
 }
 
-function Flashcard({ card, direction, flipped, flip, focus, record, saving, ready }) {
+function Flashcard({ card, active, direction, flipped, flip, focus, record, saving, ready }) {
   const germanSide = (direction === 'de') !== flipped;
   const word = germanSide ? german(card) : english(card);
   return (
@@ -286,12 +287,13 @@ function Flashcard({ card, direction, flipped, flip, focus, record, saving, read
           <span aria-hidden="true">✓</span> Got it right <kbd>2</kbd>
         </button>
       </div>
+      {flipped && <AnswerDetails key={card.id} card={card} active={active} />}
       <p className="keyboard"><kbd>Space</kbd> reveal · <kbd>1</kbd> wrong · <kbd>2</kbd> right</p>
     </div>
   );
 }
 
-function Quiz({ card, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, pick, onNext }) {
+function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, pick, onNext }) {
   const prompt = germanAnswer ? english(card) : german(card);
   return (
     <div>
@@ -317,6 +319,7 @@ function Quiz({ card, germanAnswer, choices, answer, saving, ready, answerSaved,
           {answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
         </button>
       </div>}
+      {answer && <AnswerDetails key={card.id} card={card} active={active} />}
     </div>
   );
 }
