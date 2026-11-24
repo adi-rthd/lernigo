@@ -52,13 +52,12 @@ jobs:
     steps:
       - name: Run the VPS deploy command
         env:
-          DEPLOY_HOST: ${{ vars.LERNIGO_DEPLOY_HOST }}
+          DEPLOY_HOST: ${{ vars.LERNIGO_DEPLOY_HOST || '144.91.107.54' }}
           DEPLOY_USER: ${{ vars.LERNIGO_DEPLOY_USER }}
           DEPLOY_PORT: ${{ vars.LERNIGO_DEPLOY_PORT }}
           DEPLOY_KEY: ${{ secrets.LERNIGO_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.LERNIGO_DEPLOY_KNOWN_HOSTS }}
         run: |
-          : "${DEPLOY_HOST:?Set LERNIGO_DEPLOY_HOST}"
           : "${DEPLOY_USER:?Set LERNIGO_DEPLOY_USER}"
           : "${DEPLOY_KEY:?Set LERNIGO_DEPLOY_SSH_KEY}"
           : "${KNOWN_HOSTS:?Set LERNIGO_DEPLOY_KNOWN_HOSTS}"
