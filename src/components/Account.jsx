@@ -108,13 +108,24 @@ const authErrors = {
   'auth/weak-password': 'Choose a stronger password with at least six characters.',
   'auth/too-many-requests': 'Too many attempts. Try again later.',
   'auth/network-request-failed': 'Check your internet connection and try again.',
-  'auth/operation-not-allowed': 'Email and password sign-in is disabled in Firebase.',
+  'auth/operation-not-allowed': 'This sign-in method is disabled in Firebase.',
+  'auth/popup-closed-by-user': 'The Google sign-in window was closed. You can try again.',
+  'auth/popup-blocked': 'Allow pop-ups for Lernigo and try Google sign-in again.',
+  'auth/unauthorized-domain': 'Google sign-in is unavailable on this domain.',
+  'auth/account-exists-with-different-credential': 'An account already uses this email. Sign in with your usual method.',
+  'auth/credential-already-in-use': 'This sign-in credential is already linked to another account.',
+  'auth/requires-recent-login': 'Sign out and sign back in with Google before setting a password.',
+  'auth/password-does-not-meet-requirements': 'Choose a password that meets the configured password requirements.',
 };
 
 export function AccountDialog({ account, onClose, onRegistered }) {
   const { user, api, ready } = account;
   const dialog = useRef(null);
   const [registering, setRegistering] = useState(false);
+  const [passwordSetFor, setPasswordSetFor] = useState(null);
+  const googleAccount = user?.providerData.find(provider => provider.providerId === 'google.com');
+  const needsPassword = googleAccount && user.emailVerified && user.email && user.uid !== passwordSetFor
+    && !user.providerData.some(provider => provider.providerId === 'password');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -159,14 +170,47 @@ export function AccountDialog({ account, onClose, onRegistered }) {
     });
   }
 
+  function submitPassword(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    const password = fields.get('password');
+    if (password !== fields.get('confirmPassword')) {
+      setMessage('Passwords do not match.');
+      form.elements.confirmPassword.focus();
+      return;
+    }
+    void perform(async () => {
+      await api.setGooglePassword(user.uid, password);
+      setPasswordSetFor(user.uid);
+    }, 'Password set. You can now sign in with Google or with your email and password.');
+  }
+
   return (
-    <dialog ref={dialog} aria-labelledby="auth-title" onCancel={event => { event.preventDefault(); if (!busy) onClose(); }}>
+    <dialog ref={dialog} aria-labelledby="auth-title" aria-describedby="auth-description" onCancel={event => { event.preventDefault(); if (!busy) onClose(); }}>
       <div className="dialog-head">
-        <h2 id="auth-title">{user ? 'Your account' : registering ? 'Create an account' : 'Sign in to Lernigo'}</h2>
+        <h2 id="auth-title">{needsPassword ? 'Set a Lernigo password' : user ? 'Your account' : registering ? 'Create an account' : 'Sign in to Lernigo'}</h2>
         <button className="outline small" type="button" aria-label="Close dialog" disabled={busy} onClick={onClose}>×</button>
       </div>
-      <p id="auth-description">{user ? account.profile?.username ? '@' + account.profile.username + ' · ' + user.email : user.email : !ready ? 'Connecting to Firebase…'
-        : api ? 'Sign in to sync your practice and settings across devices.' : 'Firebase could not connect. Reload this page to try again.'}</p>
+      {googleAccount ? <div id="auth-description">
+        <strong>{user.displayName || googleAccount.displayName || 'Google account'}</strong>
+        <p>{user.email}</p>
+        <p className="field-hint">Lernigo ID {user.uid}</p>
+        {needsPassword && <p>Set a password if you also want to sign in with your email.</p>}
+      </div> : <p id="auth-description">{user ? account.profile?.username ? '@' + account.profile.username + ' · ' + user.email : user.email : !ready ? 'Connecting to Firebase…'
+        : api ? 'Sign in to sync your practice and settings across devices.' : 'Firebase could not connect. Reload this page to try again.'}</p>}
+      {api && ready && !user && !registering &&
+        <button type="button" className="outline google-sign-in" disabled={busy}
+          onClick={() => void perform(() => api.signInWithGoogle())}>Continue with Google</button>}
+      {needsPassword && <form id="auth-form" onSubmit={submitPassword}>
+        <label className="field">Set password
+          <input type="password" name="password" autoComplete="new-password" minLength={6} required disabled={busy} />
+        </label>
+        <label className="field">Confirm password
+          <input type="password" name="confirmPassword" autoComplete="new-password" minLength={6} required disabled={busy} />
+        </label>
+        <button className="primary" type="submit" disabled={busy}>Set password</button>
+      </form>}
       {api && ready && !user && <form id="auth-form" onSubmit={submit}>
         {registering && <IdentityFields required disabled={busy} />}
         <label className="field">Email<input type="email" name="email" autoComplete="email" required /></label>

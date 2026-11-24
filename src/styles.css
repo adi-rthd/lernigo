@@ -235,6 +235,8 @@ dialog { width: min(calc(100% - 30px), 430px); border: 1px solid var(--line); bo
 dialog::backdrop { background: var(--backdrop); }
 .dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 #auth-description { margin: 10px 0 14px; line-height: 1.45; color: var(--muted); }
+#auth-description { overflow-wrap: anywhere; }
+.google-sign-in { width: 100%; margin-bottom: 14px; }
 #auth-form .primary { width: 100%; margin-bottom: 8px; }
 .text-button { min-height: 34px; padding: 3px; border: 0; background: transparent; color: var(--forest); font-size: .86rem; font-weight: 700; }
 .text-button:hover:not(:disabled) { text-decoration: underline; }

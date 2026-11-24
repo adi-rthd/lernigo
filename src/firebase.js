@@ -31,6 +31,19 @@ export async function connectFirebase() {
     game: gameFirebase(db, store),
     observeUser: (onUser, onError) => auth.onAuthStateChanged(accounts, onUser, onError),
     signIn: (email, password) => auth.signInWithEmailAndPassword(accounts, email, password),
+    signInWithGoogle: () => auth.signInWithPopup(accounts, new auth.GoogleAuthProvider()),
+    setGooglePassword: async (uid, password) => {
+      await accounts.authStateReady();
+      const user = accounts.currentUser;
+      if (user?.uid !== uid) throw new Error('Sign back in with Google to set a password.');
+      await auth.reload(user);
+      if (accounts.currentUser?.uid !== uid || !user.emailVerified || !user.email ||
+          !user.providerData.some(provider => provider.providerId === 'google.com')) {
+        throw new Error('Sign back in with Google to set a password.');
+      }
+      if (user.providerData.some(provider => provider.providerId === 'password')) return;
+      await auth.linkWithCredential(user, auth.EmailAuthProvider.credential(user.email, password));
+    },
     register: (email, password) => auth.createUserWithEmailAndPassword(accounts, email, password),
     reset: email => auth.sendPasswordResetEmail(accounts, email),
     signOut: () => auth.signOut(accounts),
