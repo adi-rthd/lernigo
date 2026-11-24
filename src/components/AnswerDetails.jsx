@@ -7,7 +7,7 @@ export default function AnswerDetails({ card, active }) {
   const details = useRef(null);
   const [error, setError] = useState('');
   const pronunciation = card.word === 'Produkt' ? 'pro-DUKT' : '';
-  const example = practiceExample(card, word);
+  const example = practiceExample(card);
 
   useEffect(() => () => {
     window.speechSynthesis?.cancel();
@@ -64,7 +64,7 @@ export default function AnswerDetails({ card, active }) {
       {pronunciation && <p className="field-hint">Pronunciation: {pronunciation}</p>}
       <dl>
         <div><dt>English meaning</dt><dd lang="en">{english(card)}</dd></div>
-        <div><dt>German example</dt><dd lang="de">{example}</dd></div>
+        {example && <div><dt>German example</dt><dd lang="de">{example}</dd></div>}
       </dl>
       {error && <p className="message" role="status">{error}</p>}
     </section>

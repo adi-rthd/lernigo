@@ -3,6 +3,7 @@ import { AccountDialog, ProfileSettings } from './components/Account.jsx';
 import Game from './components/Game.jsx';
 import Practice from './components/Practice.jsx';
 import Progress from './components/Progress.jsx';
+import Read from './components/Read.jsx';
 import { cardsForLevel } from './data/index.js';
 import { availableLevel, availableLevels } from './study.js';
 import { useSound } from './useSound.js';
@@ -20,6 +21,7 @@ const lockedTabs = new Set(['leaderboard', 'cheat-sheet']);
 
 const navigation = [
   ['practice', 'Practice'],
+  ['read', 'Read'],
   ['game', 'Game'],
   ['progress', 'Progress'],
   ['leaderboard', 'Leaderboard'],
@@ -134,6 +136,7 @@ export default function App() {
           track={track} sound={sound} ready={ready} saving={saving} setSaving={setSaving}
           guestRemaining={!user ? guestLimit - guestAttempts : null} quizCandidates={!user ? a1Cards : null}
           review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />}
+        {page === 'read' && <Read cards={a1Cards} />}
         {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
           onReview={startReview} saving={saving || locked} />}
