@@ -213,6 +213,8 @@ dialog::backdrop { background: #22392f75; }
   .quiz-options { grid-template-columns: 1fr; }
 }
 
+.game-intro-title { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 12px; max-width: 760px; margin-bottom: 9px; }
+.game-intro-title h1 { margin-bottom: 0; }
 nav a[data-locked] { color: var(--muted); opacity: .8; }
 nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 .game-lobby { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 760px; }

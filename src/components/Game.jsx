@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { correctGuess, gameCards, gamePrompt, gameRounds, gameSeats, gameTypes } from '../game.js';
 import { shuffle } from '../study.js';
+import { useGameSound } from '../useGameSound.js';
 
 const validCode = /^[2-9A-HJ-NP-Z]{6}$/;
 
@@ -11,23 +12,28 @@ function gameError(error) {
 }
 
 export default function Game({ active, user, online, name, game, cards, onSignIn }) {
+  const sound = useGameSound(active);
   return (
     <section id="game" hidden={!active}>
       <div className="intro">
         <p className="kicker">A1 vocabulary · Multiplayer</p>
-        <h1>Flashcard game</h1>
+        <div className="game-intro-title">
+          <h1>Flashcard game</h1>
+          {user && game && <button className="outline small" type="button" aria-label="Game sound"
+            aria-pressed={sound.enabled} onClick={sound.toggle}>Sound {sound.enabled ? 'on' : 'off'}</button>}
+        </div>
         <p>Join a room and guess the German article or English meaning before time runs out.</p>
       </div>
       {!online ? <div className="panel game-panel"><p>Connecting to Lernigo…</p></div>
         : !user ? <div className="panel game-panel"><h2>Sign in to play</h2>
           <button className="primary" type="button" onClick={onSignIn}>Sign in</button></div>
         : !game ? <div className="panel game-panel"><p>Multiplayer is unavailable. Try reloading the page.</p></div>
-        : <GameLobby key={user.uid} uid={user.uid} name={name} game={game} cards={cards} />}
+        : <GameLobby key={user.uid} uid={user.uid} name={name} game={game} cards={cards} sound={sound} />}
     </section>
   );
 }
 
-function GameLobby({ uid, name, game, cards }) {
+function GameLobby({ uid, name, game, cards, sound }) {
   const [roomCode, setRoomCode] = useState('');
   const [code, setCode] = useState('');
   const [nickname, setNickname] = useState(null);
@@ -37,6 +43,7 @@ function GameLobby({ uid, name, game, cards }) {
 
   async function openRoom(event, action) {
     event.preventDefault();
+    sound.unlock?.();
     setBusy(true);
     setError('');
     try {
@@ -48,7 +55,7 @@ function GameLobby({ uid, name, game, cards }) {
     }
   }
 
-  if (roomCode) return <GameRoom key={roomCode} {...{ uid, game, cards }} code={roomCode}
+  if (roomCode) return <GameRoom key={roomCode} {...{ uid, game, cards }} code={roomCode} playSound={sound.play}
     onExit={() => { setCode(roomCode); setRoomCode(''); }} />;
 
   return (
@@ -103,7 +110,7 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
   );
 }
 
-function GameRoom({ code, uid, game, cards, onExit }) {
+function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   const [room, setRoom] = useState(null);
   const [rounds, setRounds] = useState({});
   const [results, setResults] = useState({});
@@ -112,8 +119,20 @@ function GameRoom({ code, uid, game, cards, onExit }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [connectionError, setConnectionError] = useState('');
+  const soundedRound = useRef(0);
   const host = room?.host === uid;
   const revealed = room?.phase === 'playing' ? room.round - 1 : room?.round ?? 0;
+  const roundCard = cards.find(card => card.id === rounds[room?.round]?.cardId);
+  const prompt = roundCard && gamePrompt(roundCard, room.type, room.round);
+  const roundGuesses = results[room?.round];
+  const answers = prompt?.answers;
+
+  useEffect(() => {
+    if (!roundGuesses || !answers || soundedRound.current >= revealed) return;
+    soundedRound.current = revealed;
+    const guess = roundGuesses[uid];
+    playSound(guess ? (correctGuess(guess, answers) ? 'correct' : 'incorrect') : 'time');
+  }, [answers, playSound, revealed, roundGuesses, uid]);
 
   useEffect(() => {
     const failed = error => setConnectionError(gameError(error));
@@ -172,8 +191,6 @@ function GameRoom({ code, uid, game, cards, onExit }) {
 
   const players = Object.entries(room.players);
   const currentRound = rounds[room.round];
-  const card = cards.find(card => card.id === currentRound?.cardId);
-  const prompt = card && gamePrompt(card, room.type, room.round);
   const scores = [[room.host, 'Host'], ...players].map(([player, name]) => {
     let points = 0;
     for (const [index, guesses] of Object.entries(results)) {
@@ -208,7 +225,7 @@ function GameRoom({ code, uid, game, cards, onExit }) {
         }} />}
 
       {room.phase === 'playing' && (prompt
-        ? <TimedRound key={room.round} {...{ room, prompt, code, uid, game }} />
+        ? <TimedRound key={room.round} {...{ room, prompt, code, uid, game, playSound }} />
         : <div className="panel game-panel"><p role="status">Loading the question…</p></div>)}
 
       {(room.phase === 'results' || room.phase === 'finished') && <div className="panel game-panel">
@@ -233,14 +250,22 @@ function GameRoom({ code, uid, game, cards, onExit }) {
   );
 }
 
-function TimedRound({ room, prompt, code, uid, game }) {
+function TimedRound({ room, prompt, code, uid, game, playSound }) {
   const [now, setNow] = useState(Date.now);
   const [guess, setGuess] = useState('');
   const [submitted, setSubmitted] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const lastCountdown = useRef(null);
   const deadline = room.startedAt.toMillis() + room.seconds * 1000;
   const remaining = Math.max(0, Math.min(room.seconds, Math.ceil((deadline - now) / 1000)));
+
+  useEffect(() => {
+    const previous = lastCountdown.current;
+    lastCountdown.current = remaining;
+    if (previous === null && remaining > 3) playSound('start');
+    if (remaining > 0 && remaining <= 3 && (previous === null || remaining < previous)) playSound('tick');
+  }, [playSound, remaining]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 200);
