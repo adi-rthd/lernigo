@@ -255,6 +255,11 @@ dialog::backdrop { background: var(--backdrop); }
   .deck-scope { grid-column: 1/-1; }
   .segments button { line-height: 1.15; font-size: .81rem; }
   .flashcard { min-height: 236px; padding: 13px; }
+  .answer-details { padding: 10px 12px; }
+  .answer-details dl { grid-template-columns: 1fr; gap: 7px; margin-top: 7px; }
+  .answer-details dl > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+  .answer-details dd { margin-top: 0; }
+  .quiz-feedback { margin-top: 10px; }
   .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
   .metric, .results, .reference, .preferences { padding: 12px; }
   footer { margin-top: 28px; }

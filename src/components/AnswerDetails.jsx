@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { practiceExample } from '../data/practice-examples.js';
 import { english, german } from '../study.js';
 
 export default function AnswerDetails({ card, active }) {
   const word = german(card);
+  const details = useRef(null);
   const [error, setError] = useState('');
   const pronunciation = card.word === 'Produkt' ? 'pro-DUKT' : '';
   const example = practiceExample(card, word);
@@ -11,6 +12,19 @@ export default function AnswerDetails({ card, active }) {
   useEffect(() => () => {
     window.speechSynthesis?.cancel();
   }, [active]);
+
+  useEffect(() => {
+    if (!window.matchMedia('(max-width: 690px)').matches) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      details.current?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'nearest',
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   function listen() {
     const synthesis = window.speechSynthesis;
@@ -42,7 +56,7 @@ export default function AnswerDetails({ card, active }) {
   }
 
   return (
-    <section className="panel answer-details" aria-label="Word details">
+    <section ref={details} className="panel answer-details" aria-label="Word details">
       <div className="answer-details-header">
         <strong lang="de">{word}</strong>
         <button className="outline small" type="button" onClick={listen}>Listen</button>

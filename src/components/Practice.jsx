@@ -313,13 +313,13 @@ function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answ
           </button>
         ))}
       </div>
+      {answer && <AnswerDetails key={card.id} card={card} active={active} />}
       {answer && <div className="quiz-feedback">
         <p aria-live="polite">{answer.correct ? 'Correct.' : 'Correct answer: ' + choices.find(choice => choice.correct).text}</p>
         <button ref={nextButton} type="button" className="primary" disabled={saving} onClick={onNext}>
           {answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
         </button>
       </div>}
-      {answer && <AnswerDetails key={card.id} card={card} active={active} />}
     </div>
   );
 }
