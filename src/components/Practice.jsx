@@ -62,7 +62,7 @@ export default function Practice({ active, level, cards, records, quizCandidates
 
   return (
     <section id="practice" hidden={!active}>
-      <div className="intro practice-intro">
+      <div className="intro">
         <p className="kicker">German vocabulary <span className="intro-level">{level}</span></p>
         <h1>Practice</h1>
         <p>{guestRemaining === null
@@ -72,7 +72,6 @@ export default function Practice({ active, level, cards, records, quizCandidates
       </div>
       <div className="layout">
         <aside className="settings">
-          <h2>Study options</h2>
           <button className="settings-toggle" type="button" aria-expanded={optionsOpen} aria-controls="study-options"
             onClick={() => setOptionsOpen(open => !open)}>
             Study options

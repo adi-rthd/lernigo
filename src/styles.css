@@ -50,11 +50,47 @@ main { flex: 1; }
 h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.65rem, 6vw, 4.05rem); font-weight: 500; letter-spacing: -.056em; line-height: 1.03; margin-bottom: 9px; color: var(--forest-deep); }
 h2 { font-size: 1.08rem; letter-spacing: -.025em; }
 .intro p:last-child, .results-bar p, .end-state p { color: var(--muted); line-height: 1.5; }
-.layout { display: grid; grid-template-columns: 266px minmax(0, 1fr); gap: 26px; align-items: start; }
+#practice { width: min(100%, 740px); margin-inline: auto; }
+#practice > .intro { padding: 30px 0 19px; text-align: center; }
+#practice .kicker { justify-content: center; }
+#practice h1 { font-size: clamp(2.6rem, 6vw, 3.35rem); }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .settings, .panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
-.settings { padding: 18px; }
-.settings h2 { margin-bottom: 18px; }
-.settings-toggle { display: none; }
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--forest-deep);
+  font-size: .94rem;
+  font-weight: 700;
+  text-align: left;
+}
+.settings-toggle::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+.settings-toggle[aria-expanded=true]::after { transform: translateY(2px) rotate(225deg); }
+.settings-controls { display: none; }
+.settings-toggle[aria-expanded=true] + .settings-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  padding: 0 13px 13px;
+}
+.settings-footer { grid-column: 1/-1; }
+.settings fieldset, .settings .field { margin: 0; }
+#chapter-field[hidden] + .field { grid-column: 1/-1; }
 fieldset { min-width: 0; border: 0; margin: 0 0 17px; padding: 0; }
 legend, .field { color: var(--ink); font-size: .88rem; font-weight: 650; margin-bottom: 7px; }
 .segments { display: flex; gap: 3px; padding: 3px; background: #ebeee6; border-radius: 7px; }
@@ -154,8 +190,6 @@ dialog::backdrop { background: #22392f75; }
   .header-inner, main, footer { width: calc(100% - 32px); }
   .header-inner { gap: 14px; }
   nav { gap: 13px; }
-  .layout { grid-template-columns: 225px minmax(0, 1fr); gap: 18px; }
-  .settings { padding: 13px; }
   .grading kbd { display: none; }
 }
 @media (max-width: 690px) {
@@ -164,44 +198,9 @@ dialog::backdrop { background: #22392f75; }
   nav a { padding: 10px 1px 9px; font-size: .8rem; }
   .account { min-height: 34px; padding: 5px 10px; }
   .intro { padding: 24px 0 19px; }
-  .layout { grid-template-columns: 1fr; gap: 13px; }
-  .settings { padding: 0; }
-  .settings h2 { display: none; }
-  .settings-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 44px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: inherit;
-    background: transparent;
-    color: var(--forest-deep);
-    font-size: .94rem;
-    font-weight: 700;
-    text-align: left;
-  }
-  .settings-toggle::after {
-    content: "";
-    width: 7px;
-    height: 7px;
-    margin-right: 3px;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: translateY(-2px) rotate(45deg);
-  }
-  .settings-toggle[aria-expanded=true]::after { transform: translateY(2px) rotate(225deg); }
-  .settings-controls { display: none; }
-  .settings-toggle[aria-expanded=true] + .settings-controls {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    padding: 0 13px 13px;
-  }
-  .deck-scope, .settings-footer { grid-column: 1/-1; }
-  .settings fieldset, .settings .field { margin: 0; }
-  #chapter-field[hidden] + .field { grid-column: 1/-1; }
+  #practice > .intro { padding: 24px 0 19px; }
+  .settings-toggle[aria-expanded=true] + .settings-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .deck-scope { grid-column: 1/-1; }
   .segments button { line-height: 1.15; font-size: .81rem; }
   .flashcard { min-height: 236px; padding: 13px; }
   .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -212,7 +211,6 @@ dialog::backdrop { background: #22392f75; }
   .header-inner, main, footer { width: calc(100% - 22px); }
   nav a { font-size: .75rem; }
   .quiz-options { grid-template-columns: 1fr; }
-  .settings #types button { font-size: .75rem; }
 }
 
 nav a[data-locked] { color: var(--muted); opacity: .8; }
