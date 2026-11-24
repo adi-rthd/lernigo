@@ -33,7 +33,7 @@ function LevelOptions() {
   return availableLevels.map(level => <option key={level} value={level}>{level}</option>);
 }
 
-export function Settings({ level, account, saving, save }) {
+export function ProfileSettings({ level, account, saving, save }) {
   const { profile, profileMessage, ready } = account;
   const [preferences, setPreferences] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -74,34 +74,31 @@ export function Settings({ level, account, saving, save }) {
   }
 
   return (
-    <section id="settings">
-      <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Manage your profile and how you appear on the leaderboard.</p></div>
-      <form className="panel preferences" onSubmit={submit}>
-        <h2>Profile</h2>
-        <IdentityFields value={settings} onChange={change} disabled={busy} />
-        <h2>Study level</h2>
-        <label className="field">
-          German level
-          <select name="level" required value={settings.level} disabled={busy || levelSelectionLocked} onChange={event => change('level', event.target.value)}>
-            <LevelOptions />
-          </select>
-          {levelSelectionLocked && <span className="field-hint">{availableLevel()} is currently available.</span>}
-        </label>
-        <div id="board-preferences">
-          <h2>Leaderboard</h2>
-          <label className="check"><input type="checkbox" name="listed" checked={settings.listed} disabled={busy}
-            onChange={event => change('listed', event.target.checked)} /> Show my scores on the leaderboards</label>
-          {settings.listed && <label className="field">
-            Leaderboard name
-            <input type="text" name="alias" minLength={2} maxLength={30} autoComplete="off" required
-              value={settings.alias} disabled={busy} onChange={event => change('alias', event.target.value)} />
-            <span className="field-hint">Use a nickname. Signed-in learners can see it.</span>
-          </label>}
-        </div>
-        <button className="primary" type="submit" disabled={busy || saving || !ready}>Save settings</button>
-        <p className="message" aria-live="polite">{profileMessage && message === 'Settings saved.' ? profileMessage : message || profileMessage}</p>
-      </form>
-    </section>
+    <form className="panel preferences" onSubmit={submit}>
+      <h2>Profile</h2>
+      <IdentityFields value={settings} onChange={change} disabled={busy} />
+      <h2>Study level</h2>
+      <label className="field">
+        German level
+        <select name="level" required value={settings.level} disabled={busy || levelSelectionLocked} onChange={event => change('level', event.target.value)}>
+          <LevelOptions />
+        </select>
+        {levelSelectionLocked && <span className="field-hint">{availableLevel()} is currently available.</span>}
+      </label>
+      <div id="board-preferences">
+        <h2>Leaderboard</h2>
+        <label className="check"><input type="checkbox" name="listed" checked={settings.listed} disabled={busy}
+          onChange={event => change('listed', event.target.checked)} /> Show my scores on the leaderboards</label>
+        {settings.listed && <label className="field">
+          Leaderboard name
+          <input type="text" name="alias" minLength={2} maxLength={30} autoComplete="off" required
+            value={settings.alias} disabled={busy} onChange={event => change('alias', event.target.value)} />
+          <span className="field-hint">Use a nickname. Signed-in learners can see it.</span>
+        </label>}
+      </div>
+      <button className="primary" type="submit" disabled={busy || saving || !ready}>Save settings</button>
+      <p className="message" aria-live="polite">{profileMessage && message === 'Settings saved.' ? profileMessage : message || profileMessage}</p>
+    </form>
   );
 }
 

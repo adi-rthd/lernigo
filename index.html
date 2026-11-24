@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Learn German with flashcards, quick quizzes, and vocabulary review from A1 to C1.">
     <meta name="theme-color" content="#f7f5ed">
+    <link rel="icon" type="image/svg+xml" href="/lernigo.svg">
+    <script>
+      try {
+        if (localStorage.getItem('lernigo:theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          document.querySelector('meta[name="theme-color"]').content = '#17201c';
+        }
+      } catch {}
+    </script>
     <title>Lernigo · German vocabulary</title>
     <script async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8395864213271060"

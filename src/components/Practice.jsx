@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { choicesFor, english, german, shuffle } from '../study.js';
-import { useSound } from '../useSound.js';
 
 const modes = [['flash', 'Flashcards'], ['mcq', 'Multiple choice']];
 const deckScopes = [['unanswered', 'Unanswered'], ['all', 'All words']];
@@ -21,11 +20,10 @@ function Options({ label, value, items, onChange, disabled }) {
   );
 }
 
-export default function Practice({ active, level, cards, records, quizCandidates, track, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
+export default function Practice({ active, level, cards, records, quizCandidates, track, sound, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
   const [savedIds, setSavedIds] = useState(() => new Set());
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [mode, setMode] = useState('mcq');
-  const sound = useSound(active, 'lernigo:practice-sound');
   const [scope, setScope] = useState('unanswered');
   const [type, setType] = useState('all');
   const [chapter, setChapter] = useState('all');
@@ -103,8 +101,6 @@ export default function Practice({ active, level, cards, records, quizCandidates
             )}
             <div className="settings-footer">
               <span>{available} {unansweredOnly ? 'unanswered' : available === 1 ? 'word' : 'words'}</span>
-              <button className="text-button" type="button" aria-label="Practice sound"
-                aria-pressed={sound.enabled} onClick={sound.toggle}>Sound {sound.enabled ? 'on' : 'off'}</button>
               <button className="text-button" type="button" disabled={saving || available < 2} onClick={() => {
                 setMixed({ matching, deck: shuffle(deck) });
                 setRound(value => value + 1);
@@ -182,7 +178,7 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
     setMessage('Saving answer…');
     if (!answer && sound.unlock) {
       const cue = result === 'right' ? 'correct' : 'incorrect';
-      void Promise.resolve(sound.unlock()).then(() => sound.play(cue));
+      void Promise.resolve(sound.unlock()).then(() => sound.play(cue, 'practice'));
     }
     if (quizChoice) {
       setResponse({ card, choice: quizChoice });

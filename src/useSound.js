@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const preferenceKey = 'lernigo:sound';
+
 const cues = {
   start: [[440, 0, .11], [587, .08, .15]],
   tick: [[660, 0, .07]],
@@ -8,11 +10,14 @@ const cues = {
   time: [[440, 0, .14]],
 };
 
-export function useSound(active, preferenceKey) {
+export function useSound(page) {
   const audio = useRef(null);
   const [enabled, setEnabled] = useState(() => {
     try {
-      return localStorage.getItem(preferenceKey) !== 'off';
+      const saved = localStorage.getItem(preferenceKey);
+      if (saved !== null) return saved === 'on';
+      return localStorage.getItem('lernigo:game-sound') !== 'off'
+        && localStorage.getItem('lernigo:practice-sound') !== 'off';
     } catch {
       return true;
     }
@@ -54,9 +59,9 @@ export function useSound(active, preferenceKey) {
     else if (audio.current) audio.current.output.gain.value = 0;
   }
 
-  const play = useCallback(cue => {
+  const play = useCallback((cue, source) => {
     const current = audio.current;
-    if (!enabled || !active || document.hidden || current?.context.state !== 'running') return;
+    if (!enabled || page !== source || document.hidden || current?.context.state !== 'running') return;
 
     const { context, output } = current;
     const now = context.currentTime;
@@ -76,7 +81,7 @@ export function useSound(active, preferenceKey) {
       tone.start(start);
       tone.stop(end);
     }
-  }, [active, enabled]);
+  }, [page, enabled]);
 
   return { enabled, toggle, unlock: enabled ? unlock : undefined, play };
 }

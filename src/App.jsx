@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AccountDialog, Settings } from './components/Account.jsx';
+import { AccountDialog, ProfileSettings } from './components/Account.jsx';
 import Game from './components/Game.jsx';
 import Practice from './components/Practice.jsx';
 import Progress from './components/Progress.jsx';
 import { cardsForLevel } from './data/index.js';
 import { availableLevel, availableLevels } from './study.js';
+import { useSound } from './useSound.js';
 import {
   addAnswer, guestAttemptsKey, guestLimit, guestProgressKey, readGuestAttempts, readGuestProgress, useAccount, writeLocal,
 } from './useAccount.js';
@@ -35,6 +36,8 @@ export default function App() {
   const account = useAccount();
   const { user, ready, api } = account;
   const [page, setPage] = useState(currentPage);
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme ?? 'light');
+  const sound = useSound(page);
   const [guestAttempts, setGuestAttempts] = useState(readGuestAttempts);
   const [guestProgress, setGuestProgress] = useState(readGuestProgress);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -62,6 +65,17 @@ export default function App() {
       window.removeEventListener('storage', syncGuest);
     };
   }, []);
+
+  function changeTheme(next) {
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    document.querySelector('meta[name="theme-color"]').content = next === 'dark' ? '#17201c' : '#f7f5ed';
+    try {
+      localStorage.setItem('lernigo:theme', next);
+    } catch {
+      // Appearance remains applied for this visit.
+    }
+  }
 
   async function track(card, result, inQuiz) {
     if (user) return account.grade(card, result, inQuiz);
@@ -100,7 +114,7 @@ export default function App() {
     <>
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand" href="#practice" aria-label="Lernigo study home"><span className="brand-mark" aria-hidden="true"><span /></span>Lernigo</a>
+          <a className="brand" href="#practice" aria-label="Lernigo study home"><img className="brand-mark" src={import.meta.env.BASE_URL + 'lernigo.svg'} width="32" height="32" alt="" />Lernigo</a>
           <nav aria-label="Main navigation">
             {navigation.map(([id, label]) => <a key={id} href={'#' + id} aria-current={page === id ? 'page' : undefined}
               data-locked={lockedTabs.has(id) || undefined} aria-label={lockedTabs.has(id) ? label + ' (locked)' : undefined}>{label}</a>)}
@@ -117,24 +131,36 @@ export default function App() {
             <div className="end-actions"><button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in to continue</button></div>
           </div>
         </section> : <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards} records={records}
-          track={track} ready={ready} saving={saving} setSaving={setSaving}
+          track={track} sound={sound} ready={ready} saving={saving} setSaving={setSaving}
           guestRemaining={!user ? guestLimit - guestAttempts : null} quizCandidates={!user ? a1Cards : null}
           review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />}
         {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
           onReview={startReview} saving={saving || locked} />}
         <Game active={page === 'game'} user={user} online={ready} name={account.profile?.username} game={api?.game}
-          cards={a1Cards} onSignIn={() => setDialogOpen(true)} />
+          cards={a1Cards} sound={sound} onSignIn={() => setDialogOpen(true)} />
         {lockedTabs.has(page) && <section id={page}>
           <div className="intro"><h1>{navigation.find(([id]) => id === page)[1]}</h1></div>
           <div className="panel game-panel"><h2>Temporarily locked</h2>
             <a className="outline" href="#practice">Back to practice</a></div>
         </section>}
-        {page === 'settings' && (user ? <Settings key={learner} level={level} account={account} saving={saving} save={saveSettings} /> :
-          <section id="settings">
-            <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Sign in to manage your profile and leaderboard settings.</p></div>
-            <button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in</button>
-          </section>)}
+        {page === 'settings' && <section id="settings">
+          <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1></div>
+          <div className="panel preferences device-preferences">
+            <h2>Appearance and sound</h2>
+            <label className="field">Theme
+              <select value={theme} onChange={event => changeTheme(event.target.value)}>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={sound.enabled} onChange={sound.toggle} /> Sound effects
+            </label>
+          </div>
+          {user ? <ProfileSettings key={learner} level={level} account={account} saving={saving} save={saveSettings} />
+            : <button type="button" className="outline" onClick={() => setDialogOpen(true)}>Sign in to manage your profile</button>}
+        </section>}
       </main>
       <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {

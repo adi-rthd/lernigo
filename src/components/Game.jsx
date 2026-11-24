@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { correctGuess, gameCards, gamePrompt, gameRounds, gameSeats, gameTypes } from '../game.js';
 import { shuffle } from '../study.js';
-import { useSound } from '../useSound.js';
 
 const validCode = /^[2-9A-HJ-NP-Z]{6}$/;
 
@@ -11,17 +10,12 @@ function gameError(error) {
   return error.message;
 }
 
-export default function Game({ active, user, online, name, game, cards, onSignIn }) {
-  const sound = useSound(active, 'lernigo:game-sound');
+export default function Game({ active, user, online, name, game, cards, sound, onSignIn }) {
   return (
     <section id="game" hidden={!active}>
       <div className="intro">
         <p className="kicker">A1 vocabulary · Multiplayer</p>
-        <div className="game-intro-title">
-          <h1>Flashcard game</h1>
-          {user && game && <button className="outline small" type="button" aria-label="Game sound"
-            aria-pressed={sound.enabled} onClick={sound.toggle}>Sound {sound.enabled ? 'on' : 'off'}</button>}
-        </div>
+        <h1>Flashcard game</h1>
         <p>Join a room and guess the German article or English meaning before time runs out.</p>
       </div>
       {!online ? <div className="panel game-panel"><p>Connecting to Lernigo…</p></div>
@@ -34,6 +28,8 @@ export default function Game({ active, user, online, name, game, cards, onSignIn
 }
 
 function GameLobby({ uid, name, game, cards, sound }) {
+  const { play, unlock } = sound;
+  const playSound = useCallback(cue => play(cue, 'game'), [play]);
   const [roomCode, setRoomCode] = useState('');
   const [code, setCode] = useState('');
   const [nickname, setNickname] = useState(null);
@@ -43,7 +39,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
 
   async function openRoom(event, action) {
     event.preventDefault();
-    sound.unlock?.();
+    unlock?.();
     setBusy(true);
     setError('');
     try {
@@ -55,7 +51,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
     }
   }
 
-  if (roomCode) return <GameRoom key={roomCode} {...{ uid, game, cards }} code={roomCode} playSound={sound.play}
+  if (roomCode) return <GameRoom key={roomCode} {...{ uid, game, cards }} code={roomCode} playSound={playSound}
     onExit={() => { setCode(roomCode); setRoomCode(''); }} />;
 
   return (
