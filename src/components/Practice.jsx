@@ -273,7 +273,7 @@ function Flashcard({ card, active, direction, flipped, flip, focus, record, savi
       <button ref={focus} type="button" className="flashcard" aria-pressed={flipped} disabled={saving} onClick={flip}>
         <span className="card-top"><span className="kind">{card.kind === 'noun' ? 'Noun' : 'Verb'}</span>{germanSide ? 'German' : 'English'}</span>
         <span className="card-center">
-          <span id="card-word" className={word.length > 28 ? 'long' : undefined} lang={germanSide ? 'de' : 'en'}>{word}</span>
+          <span key={card.id + '-' + germanSide} id="card-word" className={word.length > 28 ? 'long' : undefined} lang={germanSide ? 'de' : 'en'}>{word}</span>
           {!flipped && <span className="card-hint">{germanSide ? 'Think of the English meaning.'
             : card.kind === 'noun' ? 'Recall the German noun and its article.' : 'Recall the German verb.'}</span>}
           {flipped && card.notes && <span className="card-note">{card.notes}</span>}
@@ -300,7 +300,7 @@ function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answ
     <div className={answer ? 'quiz-answered' : undefined}>
       <div className="panel quiz-prompt">
         <div className="card-top"><span className="kind">{card.kind === 'noun' ? 'Noun' : 'Verb'}</span>{germanAnswer ? 'English' : 'German'}</div>
-        <p id="quiz-prompt" className={prompt.length > 28 ? 'long' : undefined} lang={germanAnswer ? 'en' : 'de'}>{prompt}</p>
+        <p key={card.id + '-' + germanAnswer} id="quiz-prompt" className={prompt.length > 28 ? 'long' : undefined} lang={germanAnswer ? 'en' : 'de'}>{prompt}</p>
         <p className="card-hint">{germanAnswer ? 'Choose the German translation.' : 'Choose the English meaning.'}</p>
       </div>
       <div className="quiz-options" role="group" aria-label="Answer choices">
