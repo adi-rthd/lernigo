@@ -148,6 +148,10 @@ legend, .field { color: var(--ink); font-size: .88rem; font-weight: 650; margin-
 .field-hint { color: var(--muted); font-size: .86rem; font-weight: 400; line-height: 1.4; }
 select, input:not([type=checkbox]) { width: 100%; min-height: 42px; padding: 8px 10px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; font-weight: 500; }
 select { appearance: none; padding-right: 28px; background: linear-gradient(45deg, transparent 50%, var(--forest) 50%) right 15px center/5px 5px no-repeat, linear-gradient(135deg, var(--forest) 50%, transparent 50%) right 10px center/5px 5px no-repeat, var(--paper); }
+@media (max-width: 690px), (pointer: coarse) {
+  /* iOS zooms when a focused form control uses text smaller than 16px. */
+  input:not([type=checkbox]), select, textarea { font-size: max(16px, 1em); }
+}
 .settings-footer, .session-line, .review-banner { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: .87rem; font-weight: 600; }
 .settings-footer { padding-top: 8px; border-top: 1px solid var(--line); }
 .session-line { min-height: 25px; }
