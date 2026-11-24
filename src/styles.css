@@ -77,13 +77,13 @@ h1, h2, p { margin: 0; }
 .header-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 70px; gap: 22px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; width: max-content; color: var(--forest); font-size: 1.3rem; font-weight: 750; letter-spacing: -.055em; }
 .brand-mark { display: block; flex: none; }
-.menu-toggle { display: none; }
 nav { grid-area: 1 / 2; display: flex; align-items: center; gap: 22px; }
 nav a { white-space: nowrap; padding: 24px 0 22px; border-bottom: 2px solid transparent; font-size: .9rem; font-weight: 600; color: var(--muted); }
 nav a:hover, nav a[aria-current=page] { color: var(--forest-deep); border-bottom-color: var(--forest); }
 .outline, .primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 9px 14px; border-radius: 8px; font-size: .9rem; font-weight: 700; text-align: center; }
 .outline { color: var(--forest-deep); background: var(--paper); border: 1px solid var(--line); }
 .outline:hover { background: var(--tint); }
+.menu-toggle { display: none; }
 .primary { background: var(--forest); border: 1px solid var(--forest); color: var(--on-primary); }
 .primary:hover { background: var(--forest-deep); }
 .primary:disabled { opacity: .55; }
