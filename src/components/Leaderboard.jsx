@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { levels } from '../study.js';
+import { availableLevels } from '../study.js';
 
 export default function Leaderboard({ initialLevel, user, api, ready }) {
   const [level, setLevel] = useState(initialLevel);
@@ -34,9 +34,9 @@ export default function Leaderboard({ initialLevel, user, api, ready }) {
       <div className="intro"><p className="kicker">German vocabulary</p><h1>Leaderboard</h1><p>Earn one point the first time you answer a word correctly in multiple choice.</p></div>
       <div className="panel results">
         <div className="results-bar"><h2>{level} rankings</h2><a className="outline" href="#settings">Leaderboard settings</a></div>
-        <div className="history-filters" aria-label="Leaderboard level">
-          {levels.map(item => <button key={item} type="button" aria-pressed={item === level} onClick={() => setLevel(item)}>{item}</button>)}
-        </div>
+        {availableLevels.length > 1 && <div className="history-filters" aria-label="Leaderboard level">
+          {availableLevels.map(item => <button key={item} type="button" aria-pressed={item === level} onClick={() => setLevel(item)}>{item}</button>)}
+        </div>}
         {entries.length ? <div className="table-scroll">
           <table>
             <thead><tr><th>Rank</th><th>Learner</th><th>Points</th></tr></thead>

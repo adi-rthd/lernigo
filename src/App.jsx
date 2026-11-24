@@ -5,6 +5,7 @@ import Leaderboard from './components/Leaderboard.jsx';
 import Practice from './components/Practice.jsx';
 import Progress from './components/Progress.jsx';
 import { cardsForLevel } from './data/index.js';
+import { availableLevel, availableLevels } from './study.js';
 import {
   addAnswer, guestAttemptsKey, guestLimit, guestProgressKey, readGuestAttempts, readGuestProgress, useAccount, writeLocal,
 } from './useAccount.js';
@@ -37,7 +38,7 @@ export default function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [review, setReview] = useState(null);
   const [saving, setSaving] = useState(false);
-  const level = user ? account.level : 'A1';
+  const level = availableLevel(user ? account.level : 'A1');
   const locked = !user && guestAttempts >= guestLimit;
   const learner = user?.uid ?? 'guest';
   const cards = useMemo(() => user ? cardsForLevel(level) : guestDeck, [level, user]);
@@ -80,7 +81,8 @@ export default function App() {
   }
 
   function saveSettings(settings) {
-    account.saveProfile(settings);
+    const savedLevel = availableLevels.length === 1 ? account.level : settings.level;
+    account.saveProfile({ ...settings, level: savedLevel });
     if (settings.level !== level) setReview(null);
   }
 
@@ -121,11 +123,11 @@ export default function App() {
         {page === 'cheat-sheet' && <CheatSheet />}
         {page === 'settings' && (user ? <Settings key={learner} level={level} account={account} saving={saving} save={saveSettings} /> :
           <section id="settings">
-            <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Sign in to choose a study level and manage your profile.</p></div>
+            <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Sign in to manage your profile and leaderboard settings.</p></div>
             <button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in</button>
           </section>)}
       </main>
-      <footer><span>Lernigo</span><span>German vocabulary · A1–C1</span></footer>
+      <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {
         setReview(null);
         location.hash = 'practice';

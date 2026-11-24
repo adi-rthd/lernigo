@@ -13,7 +13,7 @@ npm run dev
 
 Run `npm run build` to create the production site in `dist/`. Run `npm run preview` to serve that build locally. React components are in `src/components/`, vocabulary is in `src/data/`, and the original cheat sheet is in `public/assets/`.
 
-The complete A1 deck comes from the supplied workbook. A2, B1, B2 and C1 have 12 original starter cards each. The A1 PDF is available under Cheat sheet. A1 keeps its original card IDs and storage paths.
+The complete A1 deck comes from the supplied workbook. A1 is the only available study level. The A2–C1 starter decks remain in the source for future use. The A1 PDF is available under Cheat sheet. A1 keeps its original card IDs and storage paths.
 
 ## Firebase setup
 

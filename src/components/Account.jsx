@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { levels } from '../study.js';
+import { availableLevel, availableLevels } from '../study.js';
+
+const levelSelectionLocked = availableLevels.length === 1;
 
 const usernamePattern = '[A-Za-z0-9_]{3,24}';
 
@@ -28,7 +30,7 @@ function IdentityFields({ value, onChange, required = false, disabled }) {
 }
 
 function LevelOptions() {
-  return levels.map(level => <option key={level} value={level}>{level}</option>);
+  return availableLevels.map(level => <option key={level} value={level}>{level}</option>);
 }
 
 export function Settings({ level, account, saving, save }) {
@@ -73,16 +75,17 @@ export function Settings({ level, account, saving, save }) {
 
   return (
     <section id="settings">
-      <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Choose your study level and how you appear on the leaderboard.</p></div>
+      <div className="intro"><p className="kicker">Lernigo</p><h1>Settings</h1><p>Manage your profile and how you appear on the leaderboard.</p></div>
       <form className="panel preferences" onSubmit={submit}>
         <h2>Profile</h2>
         <IdentityFields value={settings} onChange={change} disabled={busy} />
         <h2>Study level</h2>
         <label className="field">
           German level
-          <select name="level" required value={settings.level} disabled={busy} onChange={event => change('level', event.target.value)}>
+          <select name="level" required value={settings.level} disabled={busy || levelSelectionLocked} onChange={event => change('level', event.target.value)}>
             <LevelOptions />
           </select>
+          {levelSelectionLocked && <span className="field-hint">{availableLevel()} is currently available.</span>}
         </label>
         <div id="board-preferences">
           <h2>Leaderboard</h2>
@@ -150,7 +153,7 @@ export function AccountDialog({ account, onClose, onRegistered }) {
     }
     void perform(async () => {
       if (registering) {
-        await account.register(email, password, fields.get('level'), identity);
+        await account.register(email, password, availableLevel(fields.get('level')), identity);
         onRegistered();
       } else {
         await api.signIn(email, password);
@@ -173,8 +176,11 @@ export function AccountDialog({ account, onClose, onRegistered }) {
         <label className="field">Password<input type="password" name="password"
           autoComplete={registering ? 'new-password' : 'current-password'} minLength={registering ? 6 : undefined} required /></label>
         {registering && <label className="field">
-          What level are you studying?
-          <select name="level" defaultValue="" required><option value="">Select your level</option><LevelOptions /></select>
+          {levelSelectionLocked ? 'Study level' : 'What level are you studying?'}
+          <select name="level" defaultValue={levelSelectionLocked ? availableLevel() : ''} disabled={levelSelectionLocked} required>
+            {!levelSelectionLocked && <option value="">Select your level</option>}
+            <LevelOptions />
+          </select>
         </label>}
         <button className="primary" type="submit" disabled={busy}>{registering ? 'Create account' : 'Sign in'}</button>
         <button className="text-button" type="button" disabled={busy} onClick={() => {

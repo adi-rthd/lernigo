@@ -1,4 +1,9 @@
 export const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
+export const availableLevels = ['A1'];
+
+export function availableLevel(preferred) {
+  return availableLevels.includes(preferred) ? preferred : availableLevels[0];
+}
 
 export function german(card) {
   return card.article ? card.article + ' ' + card.word : card.word;
