@@ -208,7 +208,8 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
     if (!active || saving || !focusAfterRender.current) return;
     focusAfterRender.current = false;
     const target = card ? quiz ? answer ? nextButton : firstChoice : flashButton : restartButton;
-    target.current?.focus();
+    const fixedNextButton = target === nextButton && window.matchMedia('(max-width: 690px)').matches;
+    target.current?.focus({ preventScroll: fixedNextButton });
   });
 
   useEffect(() => {
@@ -296,7 +297,7 @@ function Flashcard({ card, active, direction, flipped, flip, focus, record, savi
 function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, pick, onNext }) {
   const prompt = germanAnswer ? english(card) : german(card);
   return (
-    <div>
+    <div className={answer ? 'quiz-answered' : undefined}>
       <div className="panel quiz-prompt">
         <div className="card-top"><span className="kind">{card.kind === 'noun' ? 'Noun' : 'Verb'}</span>{germanAnswer ? 'English' : 'German'}</div>
         <p id="quiz-prompt" className={prompt.length > 28 ? 'long' : undefined} lang={germanAnswer ? 'en' : 'de'}>{prompt}</p>

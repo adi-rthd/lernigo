@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccountDialog, ProfileSettings } from './components/Account.jsx';
 import Game from './components/Game.jsx';
 import Practice from './components/Practice.jsx';
@@ -38,6 +38,8 @@ export default function App() {
   const account = useAccount();
   const { user, ready, api } = account;
   const [page, setPage] = useState(currentPage);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef(null);
   const [theme, setTheme] = useState(() => document.documentElement.dataset.theme ?? 'light');
   const sound = useSound(page);
   const [guestAttempts, setGuestAttempts] = useState(readGuestAttempts);
@@ -54,6 +56,7 @@ export default function App() {
   useEffect(() => {
     function navigate() {
       setPage(currentPage());
+      setMenuOpen(false);
       window.scrollTo(0, 0);
     }
     function syncGuest(event) {
@@ -114,14 +117,23 @@ export default function App() {
 
   return (
     <>
-      <header className="site-header">
+      <header className="site-header" onKeyDown={event => {
+        if (event.key === 'Escape' && menuOpen) {
+          setMenuOpen(false);
+          menuButton.current?.focus();
+        }
+      }}>
         <div className="header-inner">
-          <a className="brand" href="#practice" aria-label="Lernigo study home"><img className="brand-mark" src={import.meta.env.BASE_URL + 'lernigo.svg'} width="32" height="32" alt="" />Lernigo</a>
-          <nav aria-label="Main navigation">
-            {navigation.map(([id, label]) => <a key={id} href={'#' + id} aria-current={page === id ? 'page' : undefined}
+          <a className="brand" href="#practice" aria-label="Lernigo study home" onClick={() => setMenuOpen(false)}><img className="brand-mark" src={import.meta.env.BASE_URL + 'lernigo.svg'} width="32" height="32" alt="" />Lernigo</a>
+          <button type="button" className="outline account" disabled={saving} onClick={() => { setMenuOpen(false); setDialogOpen(true); }}>{user ? 'Account' : 'Sign in'}</button>
+          <button ref={menuButton} type="button" className="outline menu-toggle" aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(!menuOpen)}>
+            <span className="menu-icon" aria-hidden="true"><span /><span /><span /></span>
+          </button>
+          <nav id="main-navigation" aria-label="Main navigation" data-open={menuOpen}>
+            {navigation.map(([id, label]) => <a key={id} href={'#' + id} onClick={() => setMenuOpen(false)} aria-current={page === id ? 'page' : undefined}
               data-locked={lockedTabs.has(id) || undefined} aria-label={lockedTabs.has(id) ? label + ' (locked)' : undefined}>{label}</a>)}
           </nav>
-          <button type="button" className="outline account" disabled={saving} onClick={() => setDialogOpen(true)}>{user ? 'Account' : 'Sign in'}</button>
         </div>
       </header>
       <main>
