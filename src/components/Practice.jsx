@@ -20,6 +20,7 @@ function Options({ label, value, items, onChange, disabled }) {
 }
 
 export default function Practice({ active, level, cards, quizCandidates, track, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [mode, setMode] = useState('flash');
   const [type, setType] = useState('all');
   const [chapter, setChapter] = useState('all');
@@ -59,29 +60,35 @@ export default function Practice({ active, level, cards, quizCandidates, track, 
       <div className="layout">
         <aside className="settings">
           <h2>Study options</h2>
-          <Options label="Practice mode" items={modes} value={mode} onChange={value => { if (mode !== value) changeFilter(setMode, value); }} disabled={saving} />
-          <Options label="Word type" items={types} value={type} onChange={value => { if (type !== value) changeFilter(setType, value); }} disabled={saving || !!review} />
-          <label className="field" id="chapter-field" hidden={level !== 'A1' || guestRemaining !== null}>
-            Chapter
-            <select value={chapter} onChange={event => changeFilter(setChapter, event.target.value)} disabled={saving || !!review}>
-              <option value="all">All chapters</option>
-              {Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>Chapter {index + 1}</option>)}
-            </select>
-          </label>
-          <label className="field">
-            Card direction
-            <select value={direction} onChange={event => setDirection(event.target.value)} disabled={saving || directionLocked}>
-              <option value="de">German to English</option>
-              <option value="en">English to German</option>
-            </select>
-          </label>
-          <div className="settings-footer">
-            <span>{deck.length} {deck.length === 1 ? 'word' : 'words'}</span>
-            <button className="text-button" type="button" disabled={saving || deck.length < 2} onClick={() => {
-              setMixed({ matching, deck: shuffle(deck) });
-              setRound(value => value + 1);
-              setDirectionLocked(false);
-            }}>Shuffle</button>
+          <button className="settings-toggle" type="button" aria-expanded={optionsOpen} aria-controls="study-options"
+            onClick={() => setOptionsOpen(open => !open)}>
+            Study options
+          </button>
+          <div className="settings-controls" id="study-options">
+            <Options label="Practice mode" items={modes} value={mode} onChange={value => { if (mode !== value) changeFilter(setMode, value); }} disabled={saving} />
+            <Options label="Word type" items={types} value={type} onChange={value => { if (type !== value) changeFilter(setType, value); }} disabled={saving || !!review} />
+            <label className="field" id="chapter-field" hidden={level !== 'A1' || guestRemaining !== null}>
+              Chapter
+              <select value={chapter} onChange={event => changeFilter(setChapter, event.target.value)} disabled={saving || !!review}>
+                <option value="all">All chapters</option>
+                {Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>Chapter {index + 1}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              Card direction
+              <select value={direction} onChange={event => setDirection(event.target.value)} disabled={saving || directionLocked}>
+                <option value="de">German to English</option>
+                <option value="en">English to German</option>
+              </select>
+            </label>
+            <div className="settings-footer">
+              <span>{deck.length} {deck.length === 1 ? 'word' : 'words'}</span>
+              <button className="text-button" type="button" disabled={saving || deck.length < 2} onClick={() => {
+                setMixed({ matching, deck: shuffle(deck) });
+                setRound(value => value + 1);
+                setDirectionLocked(false);
+              }}>Shuffle</button>
+            </div>
           </div>
         </aside>
         <div className="study">
