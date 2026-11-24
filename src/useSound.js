@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const preferenceKey = 'lernigo:game-sound';
-
 const cues = {
   start: [[440, 0, .11], [587, .08, .15]],
   tick: [[660, 0, .07]],
@@ -10,7 +8,7 @@ const cues = {
   time: [[440, 0, .14]],
 };
 
-export function useGameSound(active) {
+export function useSound(active, preferenceKey) {
   const audio = useRef(null);
   const [enabled, setEnabled] = useState(() => {
     try {
@@ -38,7 +36,7 @@ export function useGameSound(active) {
       }
       const { context, output } = audio.current;
       output.gain.value = 1;
-      if (context.state !== 'running') void context.resume().catch(() => {});
+      if (context.state !== 'running') return context.resume().catch(() => {});
     } catch {
       // Audio is optional when the browser cannot create a context.
     }

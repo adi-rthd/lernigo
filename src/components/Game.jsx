@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { correctGuess, gameCards, gamePrompt, gameRounds, gameSeats, gameTypes } from '../game.js';
 import { shuffle } from '../study.js';
-import { useGameSound } from '../useGameSound.js';
+import { useSound } from '../useSound.js';
 
 const validCode = /^[2-9A-HJ-NP-Z]{6}$/;
 
@@ -12,7 +12,7 @@ function gameError(error) {
 }
 
 export default function Game({ active, user, online, name, game, cards, onSignIn }) {
-  const sound = useGameSound(active);
+  const sound = useSound(active, 'lernigo:game-sound');
   return (
     <section id="game" hidden={!active}>
       <div className="intro">

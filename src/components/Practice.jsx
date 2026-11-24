@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { choicesFor, english, german, shuffle } from '../study.js';
+import { useSound } from '../useSound.js';
 
 const modes = [['flash', 'Flashcards'], ['mcq', 'Multiple choice']];
 const deckScopes = [['unanswered', 'Unanswered'], ['all', 'All words']];
@@ -23,7 +24,8 @@ function Options({ label, value, items, onChange, disabled }) {
 export default function Practice({ active, level, cards, records, quizCandidates, track, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
   const [savedIds, setSavedIds] = useState(() => new Set());
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [mode, setMode] = useState('flash');
+  const [mode, setMode] = useState('mcq');
+  const sound = useSound(active, 'lernigo:practice-sound');
   const [scope, setScope] = useState('unanswered');
   const [type, setType] = useState('all');
   const [chapter, setChapter] = useState('all');
@@ -101,6 +103,8 @@ export default function Practice({ active, level, cards, records, quizCandidates
             )}
             <div className="settings-footer">
               <span>{available} {unansweredOnly ? 'unanswered' : available === 1 ? 'word' : 'words'}</span>
+              <button className="text-button" type="button" aria-label="Practice sound"
+                aria-pressed={sound.enabled} onClick={sound.toggle}>Sound {sound.enabled ? 'on' : 'off'}</button>
               <button className="text-button" type="button" disabled={saving || available < 2} onClick={() => {
                 setMixed({ matching, deck: shuffle(deck) });
                 setRound(value => value + 1);
@@ -129,14 +133,14 @@ export default function Practice({ active, level, cards, records, quizCandidates
           )}
           <Session key={round + ':' + (review?.id ?? '')} {...{
             active, deck, completedIds, unansweredOnly, mode, direction, ready, saving, setSaving, setDirectionLocked,
-          }} track={saveAnswer} candidates={quizCandidates ?? cards} onRestart={reset} onPracticeAll={() => changeFilter(setScope, 'all')} />
+          }} track={saveAnswer} sound={sound} candidates={quizCandidates ?? cards} onRestart={reset} onPracticeAll={() => changeFilter(setScope, 'all')} />
         </div>
       </div>
     </section>
   );
 }
 
-function Session({ active, deck, completedIds, unansweredOnly, candidates, mode, direction, track, ready, saving, setSaving, setDirectionLocked, onRestart, onPracticeAll }) {
+function Session({ active, deck, completedIds, unansweredOnly, candidates, mode, direction, track, sound, ready, saving, setSaving, setDirectionLocked, onRestart, onPracticeAll }) {
   const [answeredIds, setAnsweredIds] = useState(() => new Set());
   const [flippedFor, setFlippedFor] = useState(null);
   const [response, setResponse] = useState(null);
@@ -176,6 +180,10 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
     savingRef.current = true;
     setSaving(true);
     setMessage('Saving answer…');
+    if (!answer && sound.unlock) {
+      const cue = result === 'right' ? 'correct' : 'incorrect';
+      void Promise.resolve(sound.unlock()).then(() => sound.play(cue));
+    }
     if (quizChoice) {
       setResponse({ card, choice: quizChoice });
       setDirectionLocked(true);
