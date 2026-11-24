@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { choicesFor, english, german, shuffle } from '../study.js';
 
 const modes = [['flash', 'Flashcards'], ['mcq', 'Multiple choice']];
+const deckScopes = [['unanswered', 'Unanswered'], ['all', 'All words']];
 const types = [['all', 'All words'], ['noun', 'Nouns'], ['verb', 'Verbs']];
 
 function Options({ label, value, items, onChange, disabled }) {
@@ -19,9 +20,11 @@ function Options({ label, value, items, onChange, disabled }) {
   );
 }
 
-export default function Practice({ active, level, cards, quizCandidates, track, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
+export default function Practice({ active, level, cards, records, quizCandidates, track, review, onExitReview, ready, guestRemaining, saving, setSaving }) {
+  const [savedIds, setSavedIds] = useState(() => new Set());
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [mode, setMode] = useState('flash');
+  const [scope, setScope] = useState('unanswered');
   const [type, setType] = useState('all');
   const [chapter, setChapter] = useState('all');
   const [direction, setDirection] = useState('de');
@@ -33,6 +36,16 @@ export default function Practice({ active, level, cards, quizCandidates, track, 
     : (type === 'all' || type === card.kind) && (chapter === 'all' || card.chapters.includes(Number(chapter)))),
   [cards, review, type, chapter]);
   const deck = mixed?.matching === matching ? mixed.deck : matching;
+  const signedIn = guestRemaining === null;
+  const unansweredOnly = signedIn && !review && scope === 'unanswered';
+  const completedIds = new Set(cards.filter(card => records[card.id] || savedIds.has(card.id)).map(card => card.id));
+  const available = unansweredOnly ? deck.filter(card => !completedIds.has(card.id)).length : deck.length;
+
+  async function saveAnswer(card, result, quiz) {
+    const message = await track(card, result, quiz);
+    if (signedIn) setSavedIds(previous => previous.has(card.id) ? previous : new Set(previous).add(card.id));
+    return message;
+  }
 
   useEffect(() => { setDirectionLocked(false); }, [review]);
 
@@ -81,9 +94,15 @@ export default function Practice({ active, level, cards, quizCandidates, track, 
                 <option value="en">English to German</option>
               </select>
             </label>
+            {signedIn && (
+              <div className="deck-scope">
+                <Options label="Deck" items={deckScopes} value={scope} disabled={saving || !!review}
+                  onChange={value => { if (scope !== value) changeFilter(setScope, value); }} />
+              </div>
+            )}
             <div className="settings-footer">
-              <span>{deck.length} {deck.length === 1 ? 'word' : 'words'}</span>
-              <button className="text-button" type="button" disabled={saving || deck.length < 2} onClick={() => {
+              <span>{available} {unansweredOnly ? 'unanswered' : available === 1 ? 'word' : 'words'}</span>
+              <button className="text-button" type="button" disabled={saving || available < 2} onClick={() => {
                 setMixed({ matching, deck: shuffle(deck) });
                 setRound(value => value + 1);
                 setDirectionLocked(false);
@@ -92,27 +111,36 @@ export default function Practice({ active, level, cards, quizCandidates, track, 
           </div>
         </aside>
         <div className="study">
+          {signedIn && (
+            <div className="deck-progress">
+              <div className="session-line">
+                <strong>{level} progress</strong>
+                <span>{completedIds.size} / {cards.length} completed</span>
+              </div>
+              <progress value={completedIds.size} max={cards.length || 1} aria-label={level + ' vocabulary completed'} />
+            </div>
+          )}
           {review && (
             <div className="review-banner">
               <strong>Reviewing missed cards</strong>
               <button className="text-button" type="button" onClick={() => { reset(); onExitReview(); }} disabled={saving}>
-                Back to full deck
+                Return to practice
               </button>
             </div>
           )}
           <Session key={round + ':' + (review?.id ?? '')} {...{
-            active, deck, mode, direction, track, ready, saving, setSaving, setDirectionLocked,
-          }} candidates={quizCandidates ?? cards} onRestart={reset} />
+            active, deck, completedIds, unansweredOnly, mode, direction, ready, saving, setSaving, setDirectionLocked,
+          }} track={saveAnswer} candidates={quizCandidates ?? cards} onRestart={reset} onPracticeAll={() => changeFilter(setScope, 'all')} />
         </div>
       </div>
     </section>
   );
 }
 
-function Session({ active, deck, candidates, mode, direction, track, ready, saving, setSaving, setDirectionLocked, onRestart }) {
-  const [index, setIndex] = useState(0);
+function Session({ active, deck, completedIds, unansweredOnly, candidates, mode, direction, track, ready, saving, setSaving, setDirectionLocked, onRestart, onPracticeAll }) {
+  const [answeredIds, setAnsweredIds] = useState(() => new Set());
   const [flippedFor, setFlippedFor] = useState(null);
-  const [answer, setAnswer] = useState(null);
+  const [response, setResponse] = useState(null);
   const [answerSaved, setAnswerSaved] = useState(false);
   const [rightCount, setRightCount] = useState(0);
   const [message, setMessage] = useState('');
@@ -122,20 +150,23 @@ function Session({ active, deck, candidates, mode, direction, track, ready, savi
   const firstChoice = useRef(null);
   const nextButton = useRef(null);
   const restartButton = useRef(null);
-  const card = deck[index];
+  const pending = deck.filter(card => !answeredIds.has(card.id) && (!unansweredOnly || !completedIds.has(card.id)));
+  const answer = response?.choice;
+  const card = response?.card ?? pending[0];
+  const graded = answeredIds.size;
+  const index = graded - Number(answerSaved);
+  const pendingResponse = response && !answerSaved && !pending.includes(response.card);
+  const total = graded + pending.length + Number(Boolean(pendingResponse));
   const quiz = mode === 'mcq';
-  const flipped = flippedFor === direction;
+  const flipKey = card?.id + ':' + direction;
+  const flipped = flippedFor === flipKey;
   const germanAnswer = direction === 'en';
   const choices = useMemo(() => card && quiz ? choicesFor(card, candidates, germanAnswer) : [],
     [card, candidates, germanAnswer, quiz]);
-  const graded = index + Number(answerSaved);
-
-  useEffect(() => { setFlippedFor(null); }, [direction]);
 
   function next() {
-    setIndex(value => value + 1);
     setFlippedFor(null);
-    setAnswer(null);
+    setResponse(null);
     setAnswerSaved(false);
     setDirectionLocked(false);
     focusAfterRender.current = true;
@@ -147,11 +178,12 @@ function Session({ active, deck, candidates, mode, direction, track, ready, savi
     setSaving(true);
     setMessage('Saving answer…');
     if (quizChoice) {
-      setAnswer(quizChoice);
+      setResponse({ card, choice: quizChoice });
       setDirectionLocked(true);
     }
     try {
       setMessage(await track(card, result, quiz) ?? '');
+      setAnsweredIds(previous => new Set(previous).add(card.id));
       if (result === 'right') setRightCount(value => value + 1);
       if (quiz) setAnswerSaved(true);
       else next();
@@ -165,7 +197,7 @@ function Session({ active, deck, candidates, mode, direction, track, ready, savi
   }
 
   function flip() {
-    if (card && !saving) setFlippedFor(previous => previous === direction ? null : direction);
+    if (card && !saving) setFlippedFor(previous => previous === flipKey ? null : flipKey);
   }
 
   useEffect(() => {
@@ -194,27 +226,31 @@ function Session({ active, deck, candidates, mode, direction, track, ready, savi
   return (
     <>
       <div className="session-line">
-        <span>{card ? (quiz ? 'Question ' : 'Card ') + (index + 1) + ' of ' + deck.length : index + ' of ' + deck.length + ' answered'}</span>
+        <span>{card ? (quiz ? 'Question ' : 'Card ') + (index + 1) + ' of ' + total : total > 0 && total + ' answered this round'}</span>
         {graded > 0 && <span>{rightCount} right · {graded - rightCount} wrong</span>}
       </div>
-      <progress value={graded} max={deck.length || 1} aria-label="Cards answered in this deck" />
+      {!unansweredOnly && <progress value={graded} max={total || 1} aria-label="Cards answered in this round" />}
       {card && !quiz && (
         <Flashcard card={card} direction={direction} flipped={flipped} flip={flip} focus={flashButton}
           record={record} saving={saving} ready={ready} />
       )}
       {card && quiz && (
-        <Quiz {...{ card, germanAnswer, choices, answer, saving, ready, answerSaved, index, deck, firstChoice, nextButton }}
+        <Quiz {...{ card, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton }}
           pick={choice => void record(choice.correct ? 'right' : 'wrong', choice)}
           onNext={() => answerSaved ? next() : void record(answer.correct ? 'right' : 'wrong', answer)} />
       )}
       {!card && (
         <div className="panel end-state">
-          <h2>{deck.length ? 'You finished this deck' : 'No cards in this deck'}</h2>
-          <p>{deck.length
-            ? rightCount + ' right and ' + (deck.length - rightCount) + ' wrong in this round.'
+          <h2>{unansweredOnly && deck.length ? 'No unanswered words left' : total ? 'You finished this deck' : 'No cards in this deck'}</h2>
+          <p>{graded
+            ? rightCount + ' right and ' + (graded - rightCount) + ' wrong in this round.'
             : 'Choose a different chapter or word type to keep practising.'}</p>
           <div className="end-actions">
-            {deck.length > 0 && <button ref={restartButton} className="primary" type="button" onClick={onRestart}>Study again</button>}
+            {deck.length > 0 && (
+              <button ref={restartButton} className="primary" type="button" onClick={unansweredOnly ? onPracticeAll : onRestart}>
+                {unansweredOnly ? 'Practice all words' : 'Study again'}
+              </button>
+            )}
             <a className="outline" href="#progress">View progress</a>
           </div>
         </div>
@@ -252,7 +288,7 @@ function Flashcard({ card, direction, flipped, flip, focus, record, saving, read
   );
 }
 
-function Quiz({ card, germanAnswer, choices, answer, saving, ready, answerSaved, index, deck, firstChoice, nextButton, pick, onNext }) {
+function Quiz({ card, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, pick, onNext }) {
   const prompt = germanAnswer ? english(card) : german(card);
   return (
     <div>
@@ -275,7 +311,7 @@ function Quiz({ card, germanAnswer, choices, answer, saving, ready, answerSaved,
       {answer && <div className="quiz-feedback">
         <p aria-live="polite">{answer.correct ? 'Correct.' : 'Correct answer: ' + choices.find(choice => choice.correct).text}</p>
         <button ref={nextButton} type="button" className="primary" disabled={saving} onClick={onNext}>
-          {answerSaved ? index + 1 === deck.length ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
+          {answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
         </button>
       </div>}
     </div>

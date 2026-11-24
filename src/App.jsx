@@ -41,6 +41,7 @@ export default function App() {
   const level = availableLevel(user ? account.level : 'A1');
   const locked = !user && guestAttempts >= guestLimit;
   const learner = user?.uid ?? 'guest';
+  const records = user ? account.progress : guestProgress;
   const cards = useMemo(() => user ? cardsForLevel(level) : guestDeck, [level, user]);
 
   useEffect(() => {
@@ -112,11 +113,11 @@ export default function App() {
             <p>Sign in or create an account to keep practising.</p>
             <div className="end-actions"><button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in to continue</button></div>
           </div>
-        </section> : <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards}
+        </section> : <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards} records={records}
           track={track} ready={ready} saving={saving} setSaving={setSaving}
           guestRemaining={!user ? guestLimit - guestAttempts : null} quizCandidates={!user ? a1Cards : null}
           review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />}
-        {page === 'progress' && <Progress level={level} cards={cards} records={user ? account.progress : guestProgress}
+        {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
           onReview={startReview} saving={saving || locked} />}
         {page === 'leaderboard' && <Leaderboard key={level} initialLevel={level} user={user} api={api} ready={ready} />}
