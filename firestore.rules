@@ -84,10 +84,6 @@ service cloud.firestore {
       }
     }
 
-    match /lernigoGameAdmins/{uid} {
-      allow get: if ownsLernigoRecord(uid);
-    }
-
     match /lernigoGameRooms/{code} {
       function signedIn() {
         return request.auth != null;
@@ -109,13 +105,16 @@ service cloud.firestore {
         return room.startedAt + duration.value(room.seconds, 's');
       }
 
+      function validSettings(room) {
+        return room.type in ['mixed', 'articles', 'nouns', 'verbs']
+          && room.seconds is int && room.seconds >= 5 && room.seconds <= 60;
+      }
+
       function validNewRoom(room) {
         return signedIn() && room.host == request.auth.uid
-          && get(/databases/$(database)/documents/lernigoGameAdmins/$(request.auth.uid)).data.enabled == true
           && room.keys().hasOnly(['code', 'host', 'type', 'seconds', 'players', 'phase', 'round', 'createdAt', 'startedAt'])
           && code.matches('^[2-9A-HJ-NP-Z]{6}$') && room.code == code
-          && room.type in ['mixed', 'articles', 'nouns', 'verbs']
-          && room.seconds is int && room.seconds >= 5 && room.seconds <= 60
+          && validSettings(room)
           && room.players is map && room.players.size() == 0
           && room.phase == 'lobby' && room.round == 0
           && room.createdAt == request.time && room.startedAt == null;
@@ -130,6 +129,12 @@ service cloud.firestore {
           && ((!(uid in previous.players) && uid in next.players && next.players.size() <= 10
               && name is string && name.size() >= 1 && name.size() <= 24)
             || (uid in previous.players && !(uid in next.players)));
+      }
+
+      function updateSettings(previous, next) {
+        return host(previous) && previous.phase == 'lobby'
+          && next.diff(previous).affectedKeys().hasOnly(['type', 'seconds'])
+          && validSettings(next);
       }
 
       function startRound(previous, next) {
@@ -151,6 +156,7 @@ service cloud.firestore {
       allow get: if signedIn() && (resource == null || resource.data.phase == 'lobby' || member(resource.data));
       allow create: if validNewRoom(request.resource.data);
       allow update: if signedIn() && (updatePlayers(resource.data, request.resource.data)
+        || updateSettings(resource.data, request.resource.data)
         || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data));
 
       match /rounds/{roundId} {

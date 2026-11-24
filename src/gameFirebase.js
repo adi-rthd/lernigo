@@ -6,7 +6,6 @@ export function gameFirebase(db, store) {
   const guessRef = (code, round, uid) => store.doc(roundRef(code, round), 'guesses', uid);
 
   return {
-    canHost: async uid => (await store.getDocFromServer(store.doc(db, 'lernigoGameAdmins', uid))).data()?.enabled === true,
     async create(uid, type, seconds) {
       const code = newRoomCode();
       const ref = roomRef(code);
@@ -46,12 +45,17 @@ export function gameFirebase(db, store) {
       const snapshot = await store.getDocsFromServer(store.collection(roundRef(code, round), 'guesses'));
       return Object.fromEntries(snapshot.docs.map(guess => [guess.id, guess.data().answer]));
     },
-    start: (code, round, cardId) => {
-      const batch = store.writeBatch(db);
-      batch.update(roomRef(code), { phase: 'playing', round, startedAt: store.serverTimestamp() });
-      batch.set(roundRef(code, round), { cardId, startedAt: store.serverTimestamp() });
-      return batch.commit();
-    },
+    updateSettings: (code, type, seconds) => store.updateDoc(roomRef(code), { type, seconds }),
+    start: (code, round, cardId, type) => store.runTransaction(db, async transaction => {
+      const ref = roomRef(code);
+      const room = (await transaction.get(ref)).data();
+      if (!room || !['lobby', 'results'].includes(room.phase) || room.round + 1 !== round) {
+        throw Error('The room has changed. Try again.');
+      }
+      if (room.type !== type) throw Error('The question type has changed. Try starting again.');
+      transaction.update(ref, { phase: 'playing', round, startedAt: store.serverTimestamp() });
+      transaction.set(roundRef(code, round), { cardId, startedAt: store.serverTimestamp() });
+    }),
     reveal: (code, round) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();

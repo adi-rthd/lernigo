@@ -22,30 +22,18 @@ export default function Game({ active, user, online, name, game, cards, onSignIn
         : !user ? <div className="panel game-panel"><h2>Sign in to play</h2>
           <button className="primary" type="button" onClick={onSignIn}>Sign in</button></div>
         : !game ? <div className="panel game-panel"><p>Multiplayer is unavailable. Try reloading the page.</p></div>
-        : <GameLobby key={user.uid} active={active} uid={user.uid} name={name} game={game} cards={cards} />}
+        : <GameLobby key={user.uid} uid={user.uid} name={name} game={game} cards={cards} />}
     </section>
   );
 }
 
-function GameLobby({ active, uid, name, game, cards }) {
+function GameLobby({ uid, name, game, cards }) {
   const [roomCode, setRoomCode] = useState('');
   const [code, setCode] = useState('');
   const [nickname, setNickname] = useState(null);
   const displayName = nickname ?? name ?? '';
-  const [type, setType] = useState('mixed');
-  const [seconds, setSeconds] = useState(10);
-  const [admin, setAdmin] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [accessError, setAccessError] = useState('');
-
-  useEffect(() => {
-    if (!active) return;
-    let current = true;
-    game.canHost(uid).then(allowed => { if (current) { setAdmin(allowed); setAccessError(''); } })
-      .catch(error => { if (current) setAccessError(gameError(error)); });
-    return () => { current = false; };
-  }, [active, game, uid]);
 
   async function openRoom(event, action) {
     event.preventDefault();
@@ -82,21 +70,36 @@ function GameLobby({ active, uid, name, game, cards }) {
         </label>
         <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
       </form>
-      {admin && <form className="panel game-panel" onSubmit={event => void openRoom(event, () => game.create(uid, type, seconds))}>
-        <h2>Create a room</h2>
-        <label className="field">Question type
-          <select value={type} onChange={event => setType(event.target.value)}>
-            {Object.entries(gameTypes).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-          </select>
-        </label>
-        <label className="field">Seconds per question
-          <input type="number" min={5} max={60} step={1} value={seconds}
-            onChange={event => setSeconds(event.target.value === '' ? '' : Number(event.target.value))} required />
-        </label>
-        <button className="primary" type="submit" disabled={busy}>Create room</button>
-      </form>}
-      {(error || accessError) && <p className="game-error" role="status">{error || accessError}</p>}
+      <RoomSettingsForm title="Create a room" submitLabel="Create room" busy={busy}
+        onSubmit={(event, type, seconds) => void openRoom(event, () => game.create(uid, type, seconds))} />
+      {error && <p className="game-error" role="status">{error}</p>}
     </div>
+  );
+}
+
+function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart }) {
+  const [type, setType] = useState(room?.type ?? 'mixed');
+  const [seconds, setSeconds] = useState(room?.seconds ?? 10);
+  const changed = !room || type !== room.type || seconds !== room.seconds;
+
+  return (
+    <form className="panel game-panel" onSubmit={event => onSubmit(event, type, seconds)}>
+      <h2>{title}</h2>
+      <label className="field">Question type
+        <select value={type} disabled={busy} onChange={event => setType(event.target.value)}>
+          {Object.entries(gameTypes).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+        </select>
+      </label>
+      <label className="field">Seconds per question
+        <input type="number" min={5} max={60} step={1} value={seconds} disabled={busy}
+          onChange={event => setSeconds(event.target.value === '' ? '' : Number(event.target.value))} required />
+      </label>
+      <div className="game-answer">
+        <button className={room ? 'outline' : 'primary'} type="submit" disabled={busy || !changed}>{submitLabel}</button>
+        {room && <button className="primary" type="button" onClick={onStart}
+          disabled={busy || changed || !Object.keys(room.players).length}>Start game</button>}
+      </div>
+    </form>
   );
 }
 
@@ -157,7 +160,7 @@ function GameRoom({ code, uid, game, cards, onExit }) {
       setError('There are no more words for this question type.');
       return;
     }
-    void perform(() => game.start(code, next, card.id));
+    void perform(() => game.start(code, next, card.id, room.type));
   }
 
   if (connectionError || !room) {
@@ -195,8 +198,14 @@ function GameRoom({ code, uid, game, cards, onExit }) {
         <h2>Waiting room</h2>
         <p>{host ? 'Share the room code, then start when everyone is ready.' : 'The host will start the game.'}</p>
         {!!players.length && <ul className="game-players">{players.map(([id, name]) => <li key={id}>{name}</li>)}</ul>}
-        {host && <button className="primary" type="button" disabled={busy || !players.length} onClick={start}>Start game</button>}
       </div>}
+
+      {host && room.phase === 'lobby' && <RoomSettingsForm key={room.type + ':' + room.seconds}
+        title="Room settings" submitLabel="Save settings" busy={busy} room={room} onStart={start}
+        onSubmit={(event, type, seconds) => {
+          event.preventDefault();
+          void perform(() => game.updateSettings(code, type, seconds));
+        }} />}
 
       {room.phase === 'playing' && (prompt
         ? <TimedRound key={room.round} {...{ room, prompt, code, host, uid, game }} />
