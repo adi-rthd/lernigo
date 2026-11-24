@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Learn German with flashcards, quick quizzes, and vocabulary review from A1 to C1.">
+  <meta name="theme-color" content="#f7f5ed">
+  <title>Lernigo · German vocabulary</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#practice" aria-label="Lernigo study home"><span class="brand-mark" aria-hidden="true"><span></span></span>Lernigo</a>
+      <nav aria-label="Main navigation">
+        <a href="#practice" data-nav="practice">Practice</a>
+        <a href="#progress" data-nav="progress">Progress</a>
+        <a href="#leaderboard" data-nav="leaderboard">Leaderboard</a>
+        <a href="#cheat-sheet" data-nav="cheat-sheet">Cheat sheet</a>
+        <a href="#settings" data-nav="settings">Settings</a>
+      </nav>
+      <button type="button" class="outline account" id="account"><span id="account-label">Sign in</span></button>
+    </div>
+  </header>
+  <main>
+    <section id="practice" data-view>
+      <div class="intro practice-intro">
+        <div><p class="kicker">German vocabulary <span class="intro-level" id="study-level">A1</span></p><h1>Practice</h1><p id="deck-description">Nouns and verbs from chapters 1–12.</p></div>
+      </div>
+      <div class="layout">
+        <aside class="settings">
+          <h2>Study options</h2>
+          <fieldset><legend>Practice mode</legend><div class="segments" id="modes"><button type="button" data-mode="flash" aria-pressed="true">Flashcards</button><button type="button" data-mode="mcq" aria-pressed="false">Multiple choice</button></div></fieldset>
+          <fieldset><legend>Word type</legend><div class="segments" id="types"><button type="button" data-type="all" aria-pressed="true">All words</button><button type="button" data-type="noun" aria-pressed="false">Nouns</button><button type="button" data-type="verb" aria-pressed="false">Verbs</button></div></fieldset>
+          <label class="field" id="chapter-field">Chapter<select id="chapter"><option value="all">All chapters</option></select></label>
+          <label class="field">Card direction<select id="direction"><option value="de">German to English</option><option value="en">English to German</option></select></label>
+          <div class="settings-footer"><span id="deck-size">Loading cards…</span><button id="shuffle" type="button" class="text-button">Shuffle</button></div>
+        </aside>
+        <div class="study">
+          <div id="review-banner" class="review-banner" hidden><strong>Reviewing missed cards</strong><button type="button" class="text-button" id="exit-review">Back to full deck</button></div>
+          <div class="session-line"><span id="position">Loading deck…</span><span id="round-summary"></span></div>
+          <progress id="session-progress" value="0" max="1" aria-label="Cards answered in this deck"></progress>
+          <div id="card-area">
+            <button type="button" class="flashcard" id="flashcard" aria-pressed="false" disabled>
+              <span class="card-top"><span class="kind" id="kind">WORD</span><span id="card-language"></span></span>
+              <span class="card-center"><span id="card-word">Loading…</span><span class="card-hint" id="card-hint"></span><span class="card-note" id="card-note" hidden></span></span>
+              <span class="card-bottom" id="card-instruction">Reveal answer</span>
+            </button>
+            <div class="grading" role="group" aria-label="Grade your answer"><button type="button" class="wrong-btn" id="wrong" disabled><span aria-hidden="true">×</span> Got it wrong <kbd>1</kbd></button><button type="button" class="right-btn" id="right" disabled><span aria-hidden="true">✓</span> Got it right <kbd>2</kbd></button></div>
+            <p class="keyboard"><kbd>Space</kbd> reveal · <kbd>1</kbd> wrong · <kbd>2</kbd> right</p>
+          </div>
+          <div id="quiz-area" hidden>
+            <div class="panel quiz-prompt"><div class="card-top"><span id="quiz-kind" class="kind"></span><span id="quiz-language"></span></div><p id="quiz-prompt"></p><p id="quiz-instruction" class="card-hint"></p></div>
+            <div class="quiz-options" id="quiz-options" role="group" aria-label="Answer choices"></div>
+            <div class="quiz-feedback" id="quiz-feedback" hidden><p id="quiz-result" aria-live="polite"></p><button type="button" class="primary" id="quiz-next">Next question</button></div>
+          </div>
+          <div id="end-state" class="panel end-state" hidden>
+            <h2 id="end-title"></h2><p id="end-description"></p>
+            <div class="end-actions"><button class="primary" id="restart" type="button">Study again</button><a class="outline" href="#progress">View progress</a></div>
+          </div>
+          <p class="message" id="save-message" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+    <section id="progress" data-view hidden>
+      <div class="intro"><p class="kicker">German vocabulary</p><h1>Progress</h1><p id="progress-level">Your A1 answers and words to review.</p></div>
+      <div class="stats">
+        <div class="panel metric"><span>Words studied</span><strong id="total-studied">0</strong></div>
+        <div class="panel metric metric-right"><span>Last answer right</span><strong id="total-right">0</strong></div>
+        <div class="panel metric metric-wrong"><span>Needs practice</span><strong id="total-wrong">0</strong></div>
+        <div class="panel metric"><span>Not yet studied</span><strong id="total-new">0</strong></div>
+      </div>
+      <div class="panel results">
+        <div class="results-bar"><div><h2>Word history</h2><p id="progress-source">Guest progress on this browser</p></div><button type="button" class="primary" id="start-review" disabled>Review missed cards</button></div>
+        <div id="history-filters" class="history-filters" aria-label="Filter words">
+          <button type="button" data-status="all" aria-pressed="true">All studied</button>
+          <button type="button" data-status="wrong" aria-pressed="false">Needs practice</button>
+          <button type="button" data-status="right" aria-pressed="false">Got it right</button>
+          <button type="button" data-status="new" aria-pressed="false">Not yet studied</button>
+        </div>
+        <p class="empty-text" id="history-empty">Your answers will appear here after you study a card.</p>
+        <div id="history-scroll" class="table-scroll" tabindex="0" role="region" aria-label="Vocabulary answer history" hidden><table><thead><tr><th>German</th><th>English</th><th>Right</th><th>Wrong</th><th>Last answer</th></tr></thead><tbody id="history"></tbody></table></div>
+      </div>
+    </section>
+    <section id="leaderboard" data-view hidden>
+      <div class="intro"><p class="kicker">German vocabulary</p><h1>Leaderboard</h1><p>Earn one point the first time you answer a word correctly in multiple choice.</p></div>
+      <div class="panel results">
+        <div class="results-bar"><h2 id="board-heading">A1 rankings</h2><a class="outline" href="#settings">Leaderboard settings</a></div>
+        <div id="board-levels" class="history-filters" aria-label="Leaderboard level"></div>
+        <p class="empty-text" id="board-empty" role="status"></p>
+        <div class="table-scroll" id="board-table" hidden><table><thead><tr><th>Rank</th><th>Learner</th><th>Points</th></tr></thead><tbody id="board-rows"></tbody></table></div>
+      </div>
+    </section>
+    <section id="cheat-sheet" data-view hidden>
+      <div class="intro"><p class="kicker">German grammar</p><h1>Cheat sheet</h1><p>Your A1 grammar reference.</p></div>
+      <div class="panel reference">
+        <div class="results-bar"><div><h2>German A1 cheat sheet</h2><p>4 pages</p></div><a href="./assets/cheat-sheet.pdf" class="outline" target="_blank" rel="noopener" aria-label="Open the PDF in a new tab">Open PDF</a></div>
+        <div id="pages" class="pages"></div>
+      </div>
+    </section>
+    <section id="settings" data-view hidden>
+      <div class="intro"><p class="kicker">Lernigo</p><h1>Settings</h1><p>Choose your study level and how you appear on the leaderboard.</p></div>
+      <form class="panel preferences" id="settings-form">
+        <h2>Study level</h2><label class="field">German level<select id="settings-level" name="level" required></select></label>
+        <div id="board-preferences" hidden><h2>Leaderboard</h2><label class="check"><input type="checkbox" name="listed"> Show my scores on the leaderboards</label><label class="field" id="alias-field" hidden>Leaderboard name<input type="text" name="alias" minlength="2" maxlength="30" autocomplete="off"><span class="field-hint">Use a nickname. Signed-in learners can see it.</span></label></div>
+        <p id="settings-guest" class="field-hint">Sign in to sync your settings and join a leaderboard.</p>
+        <button class="primary" type="submit" id="save-settings">Save settings</button>
+        <p class="message" id="settings-message" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+  <footer><span>Lernigo</span><span>German vocabulary · A1–C1</span></footer>
+  <dialog id="auth-dialog" aria-labelledby="auth-title">
+    <div class="dialog-head"><h2 id="auth-title">Sign in to Lernigo</h2><button class="outline small" id="close-auth" type="button" aria-label="Close dialog">×</button></div>
+    <p id="auth-description"></p>
+    <form id="auth-form" hidden>
+      <label class="field">Email<input type="email" name="email" autocomplete="email" required></label>
+      <label class="field">Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <label class="field" id="signup-level-field" hidden>What level are you studying?<select name="level" id="signup-level"><option value="">Select your level</option></select></label>
+      <button type="submit" class="primary" id="auth-submit">Sign in</button>
+      <button type="button" class="text-button" id="auth-toggle">Create an account</button>
+      <button type="button" class="text-button" id="auth-reset">Reset password</button>
+    </form>
+    <button type="button" class="outline" id="sign-out" hidden>Sign out</button>
+    <p class="message" id="auth-message" aria-live="polite"></p>
+  </dialog>
+</body>
+</html>

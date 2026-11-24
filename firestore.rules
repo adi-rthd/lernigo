@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function ownsLernigoRecord(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isLernigoLevel(level) {
+      return level in ['A1', 'A2', 'B1', 'B2', 'C1'];
+    }
+
+    match /wortdeckUsers/{uid} {
+      allow read: if ownsLernigoRecord(uid);
+      allow create, update: if ownsLernigoRecord(uid)
+        && request.resource.data.keys().hasOnly(['level', 'listed', 'alias'])
+        && isLernigoLevel(request.resource.data.level)
+        && request.resource.data.listed is bool
+        && request.resource.data.alias is string
+        && (request.resource.data.listed
+          ? request.resource.data.alias.size() >= 2 && request.resource.data.alias.size() <= 30
+          : request.resource.data.alias == '');
+
+      match /cards/{cardId} {
+        function validCard() {
+          let card = request.resource.data;
+          return cardId.matches('^[0-9a-f]{16}$')
+            && card.keys().hasAll(['right', 'wrong', 'last', 'updatedAt'])
+            && card.keys().hasOnly(['right', 'wrong', 'last', 'updatedAt'])
+            && card.right is int && card.right >= 0
+            && card.wrong is int && card.wrong >= 0
+            && card.last in ['right', 'wrong']
+            && card.updatedAt == request.time;
+        }
+        function advancesFrom(right, wrong) {
+          let card = request.resource.data;
+          return (card.last == 'right' && card.right == right + 1 && card.wrong == wrong)
+            || (card.last == 'wrong' && card.right == right && card.wrong == wrong + 1);
+        }
+        allow read: if ownsLernigoRecord(uid);
+        allow create: if ownsLernigoRecord(uid) && validCard() && advancesFrom(0, 0);
+        allow update: if ownsLernigoRecord(uid) && validCard()
+          && advancesFrom(resource.data.right, resource.data.wrong);
+      }
+
+      match /quizSolved/{cardId} {
+        function markedAnswer() {
+          let card = getAfter(/databases/$(database)/documents/wortdeckUsers/$(uid)/cards/$(cardId)).data;
+          let level = request.resource.data.level;
+          return card.last == 'right' && card.updatedAt == request.time
+            && getAfter(/databases/$(database)/documents/wortdeckUsers/$(uid)/scores/$(level)).data.cardId == cardId;
+        }
+        allow read: if ownsLernigoRecord(uid);
+        allow create: if ownsLernigoRecord(uid)
+          && cardId.matches('^[0-9a-f]{16}$')
+          && request.resource.data.keys().hasOnly(['level'])
+          && isLernigoLevel(request.resource.data.level)
+          && markedAnswer();
+      }
+
+      match /scores/{level} {
+        function newPoint(previous) {
+          let score = request.resource.data;
+          let cardId = score.cardId;
+          let marker = /databases/$(database)/documents/wortdeckUsers/$(uid)/quizSolved/$(cardId);
+          return isLernigoLevel(level) && score.keys().hasOnly(['points', 'cardId'])
+            && score.points is int && score.points == previous + 1
+            && score.points <= (level == 'A1' ? 793 : 12)
+            && cardId is string && cardId.matches('^[0-9a-f]{16}$')
+            && !exists(marker) && getAfter(marker).data.level == level;
+        }
+        allow read: if ownsLernigoRecord(uid);
+        allow create: if ownsLernigoRecord(uid) && newPoint(0);
+        allow update: if ownsLernigoRecord(uid) && newPoint(resource.data.points);
+      }
+    }
+
+    match /lernigoLeaderboards/{level}/entries/{uid} {
+      function matchesScoreAndProfile() {
+        let profile = getAfter(/databases/$(database)/documents/wortdeckUsers/$(uid)).data;
+        let score = getAfter(/databases/$(database)/documents/wortdeckUsers/$(uid)/scores/$(level)).data;
+        let entry = request.resource.data;
+        return profile.listed == true && entry.keys().hasOnly(['alias', 'points'])
+          && entry.alias == profile.alias && entry.points == score.points;
+      }
+      allow get: if request.auth != null && isLernigoLevel(level);
+      allow list: if request.auth != null && isLernigoLevel(level) && request.query.limit <= 25;
+      allow create, update: if ownsLernigoRecord(uid) && isLernigoLevel(level) && matchesScoreAndProfile();
+      allow delete: if ownsLernigoRecord(uid) && isLernigoLevel(level);
+    }
+  }
+}
