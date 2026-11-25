@@ -19,7 +19,7 @@ function bannerDocument({ key, height }) {
 </head>
 <body>
 <script>
-  var atOptions = {
+  window.atOptions = {
     key: '${key}',
     format: 'iframe',
     height: ${height},
