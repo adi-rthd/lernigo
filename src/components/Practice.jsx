@@ -142,6 +142,8 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
   const [flippedFor, setFlippedFor] = useState(null);
   const [response, setResponse] = useState(null);
   const [answerSaved, setAnswerSaved] = useState(false);
+  const [quizHistory, setQuizHistory] = useState([]);
+  const [reviewIndex, setReviewIndex] = useState(null);
   const [rightCount, setRightCount] = useState(0);
   const [message, setMessage] = useState('');
   const savingRef = useRef(false);
@@ -163,8 +165,16 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
   const flipKey = card?.id + ':' + direction;
   const flipped = flippedFor === flipKey;
   const germanAnswer = direction === 'en';
+  const reviewed = reviewIndex === null ? null : quizHistory[reviewIndex];
+  const quizCard = reviewed?.card ?? card;
+  const canGoBack = (reviewIndex ?? index) > 0;
   const choices = useMemo(() => card && quiz ? choicesFor(card, candidates, germanAnswer) : [],
     [card, candidates, germanAnswer, quiz]);
+
+  function browseQuestion(newIndex) {
+    setReviewIndex(newIndex < index ? newIndex : null);
+    focusAfterRender.current = true;
+  }
 
   function next() {
     setFlippedFor(null);
@@ -191,8 +201,10 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
       setMessage(await track(card, result, quiz) ?? '');
       setAnsweredIds(previous => new Set(previous).add(card.id));
       if (result === 'right') setRightCount(value => value + 1);
-      if (quiz) setAnswerSaved(true);
-      else next();
+      if (quiz) {
+        setQuizHistory(previous => [...previous, { card, choice: quizChoice, choices, germanAnswer }]);
+        setAnswerSaved(true);
+      } else next();
     } catch {
       setMessage('Couldn’t save your answer. Check your connection and try again.');
     } finally {
@@ -209,8 +221,9 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
   useLayoutEffect(() => {
     if (!active || saving || !focusAfterRender.current) return;
     focusAfterRender.current = false;
-    const target = card ? quiz ? answer ? nextButton : firstChoice : flashButton : restartButton;
-    target.current?.focus({ preventScroll: quiz && !!card });
+    const target = quiz ? reviewed || answer ? nextButton : card ? firstChoice : restartButton
+      : card ? flashButton : restartButton;
+    target.current?.focus({ preventScroll: quiz && !!quizCard });
     if (target === firstChoice) {
       const prompt = quizPrompt.current;
       const options = quizOptions.current;
@@ -245,7 +258,7 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
   return (
     <>
       <div className="session-line">
-        <span>{card ? (quiz ? 'Question ' : 'Card ') + (index + 1) + ' of ' + total : total > 0 && total + ' answered this round'}</span>
+        <span>{(quiz ? quizCard : card) ? (quiz ? 'Question ' : 'Card ') + ((reviewIndex ?? index) + 1) + ' of ' + total : total > 0 && total + ' answered this round'}</span>
         {graded > 0 && <span>{rightCount} right · {graded - rightCount} wrong</span>}
       </div>
       {!unansweredOnly && <progress value={graded} max={total || 1} aria-label="Cards answered in this round" />}
@@ -253,12 +266,19 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
         <Flashcard card={card} active={active} direction={direction} flipped={flipped} flip={flip} focus={flashButton}
           record={record} saving={saving} ready={ready} />
       )}
-      {card && quiz && (
-        <Quiz {...{ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, quizPrompt, quizOptions }}
+      {quiz && quizCard && (
+        <Quiz card={quizCard} germanAnswer={reviewed?.germanAnswer ?? germanAnswer}
+          choices={reviewed?.choices ?? choices} answer={reviewed?.choice ?? answer}
+          {...{ active, saving, ready, answerSaved, index, total, firstChoice, nextButton, quizPrompt, quizOptions }}
+          reviewing={!!reviewed} onPrevious={canGoBack ? () => browseQuestion((reviewIndex ?? index) - 1) : null}
           pick={choice => void record(choice.correct ? 'right' : 'wrong', choice)}
-          onNext={() => answerSaved ? next() : void record(answer.correct ? 'right' : 'wrong', answer)} />
+          onNext={() => {
+            if (reviewed) browseQuestion(reviewIndex + 1);
+            else if (answerSaved) next();
+            else void record(answer.correct ? 'right' : 'wrong', answer);
+          }} />
       )}
-      {!card && (
+      {!card && !reviewed && (
         <div className="panel end-state">
           <h2>{unansweredOnly && deck.length ? 'No unanswered words left' : total ? 'You finished this deck' : 'No cards in this deck'}</h2>
           <p>{graded
@@ -269,6 +289,9 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
               <button ref={restartButton} className="primary" type="button" onClick={unansweredOnly ? onPracticeAll : onRestart}>
                 {unansweredOnly ? 'Practice all words' : 'Study again'}
               </button>
+            )}
+            {quiz && quizHistory.length > 0 && (
+              <button className="outline" type="button" onClick={() => browseQuestion(quizHistory.length - 1)}>Previous question</button>
             )}
             <a className="outline" href="#progress">View progress</a>
           </div>
@@ -308,10 +331,10 @@ function Flashcard({ card, active, direction, flipped, flip, focus, record, savi
   );
 }
 
-function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, quizPrompt, quizOptions, pick, onNext }) {
+function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, quizPrompt, quizOptions, reviewing, onPrevious, pick, onNext }) {
   const prompt = germanAnswer ? english(card) : german(card);
   return (
-    <div className={answer ? 'quiz-answered' : undefined}>
+    <div className={answer || onPrevious ? 'quiz-answered' : undefined}>
       <div ref={quizPrompt} className="panel quiz-prompt">
         <div className="card-top"><span className="kind">{card.kind === 'noun' ? 'Noun' : 'Verb'}</span>{germanAnswer ? 'English' : 'German'}</div>
         <p key={card.id + '-' + germanAnswer} id="quiz-prompt" className={prompt.length > 28 ? 'long' : undefined} lang={germanAnswer ? 'en' : 'de'}>{prompt}</p>
@@ -329,11 +352,14 @@ function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answ
         ))}
       </div>
       {answer && <AnswerDetails key={card.id} card={card} active={active} />}
-      {answer && <div className="quiz-feedback">
-        <p aria-live="polite">{answer.correct ? 'Correct.' : 'Correct answer: ' + choices.find(choice => choice.correct).text}</p>
-        <button ref={nextButton} type="button" className="primary" disabled={saving} onClick={onNext}>
-          {answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
-        </button>
+      {(answer || onPrevious) && <div className="quiz-feedback">
+        <p aria-live="polite">{answer && (answer.correct ? 'Correct.' : 'Correct answer: ' + choices.find(choice => choice.correct).text)}</p>
+        <div className="quiz-navigation">
+          {onPrevious && <button className="outline" type="button" disabled={saving} onClick={onPrevious}>Previous question</button>}
+          {answer && <button ref={nextButton} type="button" className="primary" disabled={saving} onClick={onNext}>
+            {reviewing ? 'Next question' : answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
+          </button>}
+        </div>
       </div>}
     </div>
   );

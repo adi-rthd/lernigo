@@ -208,6 +208,14 @@ kbd { font-family: inherit; font-size: .74rem; border: 1px solid var(--line); bo
   background: var(--paper);
 }
 .quiz-feedback button { min-height: 44px; }
+.quiz-navigation { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+@media (max-width: 550px) {
+  .quiz-feedback { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .quiz-feedback p:empty { display: none; }
+  .quiz-answered { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+  .quiz-navigation { flex-wrap: nowrap; }
+  .quiz-navigation button { padding-inline: 8px; }
+}
 .answer-details { padding: 12px 14px; margin-top: 12px; overflow-wrap: anywhere; }
 .answer-details-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .answer-details-header strong { color: var(--forest-deep); font-size: 1.13rem; }
