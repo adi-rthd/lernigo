@@ -351,15 +351,19 @@ function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answ
           </button>
         ))}
       </div>
+      <div className="quiz-result" role="status">
+        {answer && <p data-result={answer.correct ? 'right' : 'wrong'}>
+          {answer.correct ? 'Correct!' : <>Correct answer: <strong lang={germanAnswer ? 'de' : 'en'}>
+            {choices.find(choice => choice.correct).text}
+          </strong></>}
+        </p>}
+      </div>
       {answer && <AnswerDetails key={card.id} card={card} active={active} />}
-      {(answer || onPrevious) && <div className="quiz-feedback">
-        <p aria-live="polite">{answer && (answer.correct ? 'Correct.' : 'Correct answer: ' + choices.find(choice => choice.correct).text)}</p>
-        <div className="quiz-navigation">
-          {onPrevious && <button className="outline" type="button" disabled={saving} onClick={onPrevious}>Previous question</button>}
-          {answer && <button ref={nextButton} type="button" className="primary" disabled={saving} onClick={onNext}>
-            {reviewing ? 'Next question' : answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
-          </button>}
-        </div>
+      {(answer || onPrevious) && <div className="quiz-navigation" role="group" aria-label="Question navigation">
+        {onPrevious && <button className="outline quiz-previous" type="button" disabled={saving} onClick={onPrevious}>Previous question</button>}
+        {answer && <button ref={nextButton} type="button" className="primary quiz-next" disabled={saving} onClick={onNext}>
+          {reviewing ? 'Next question' : answerSaved ? index + 1 === total ? 'See results' : 'Next question' : saving ? 'Saving…' : 'Retry save'}
+        </button>}
       </div>}
     </div>
   );
