@@ -92,8 +92,16 @@ service cloud.firestore {
           && getAfter(room).data.host == uid;
       }
 
+      function canReplaceRoom(previous, next) {
+        let oldRoom = /databases/$(database)/documents/lernigoGameRooms/$(previous.code);
+        let newRoom = /databases/$(database)/documents/lernigoGameRooms/$(next.code);
+        return next.code != previous.code && (!exists(oldRoom) || get(oldRoom).data.phase == 'finished')
+          && !exists(newRoom) && ownsLinkedRoom(next);
+      }
+
       allow get: if ownsLernigoRecord(uid);
       allow create: if ownsLernigoRecord(uid) && ownsLinkedRoom(request.resource.data);
+      allow update: if ownsLernigoRecord(uid) && canReplaceRoom(resource.data, request.resource.data);
     }
 
     match /lernigoGameRooms/{code} {
@@ -179,20 +187,12 @@ service cloud.firestore {
           && next.phase == (previous.round == previous.get('totalRounds', 10) ? 'finished' : 'results');
       }
 
-      function replay(previous, next) {
-        return host(previous) && previous.phase == 'finished' && linkedRoom()
-          && next.diff(previous).affectedKeys().hasOnly(['phase', 'round', 'startedAt', 'gameNumber'])
-          && next.phase == 'lobby' && next.round == 0 && next.startedAt == null
-          && next.gameNumber is int && next.gameNumber == previous.get('gameNumber', 0) + 1;
-      }
-
       allow get: if signedIn() && (resource == null || resource.data.phase == 'lobby' || member(resource.data));
       allow list: if host(resource.data);
       allow create: if validNewRoom(request.resource.data) && linkedRoom();
       allow update: if signedIn() && (updatePlayers(resource.data, request.resource.data)
         || updateSettings(resource.data, request.resource.data)
-        || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data)
-        || replay(resource.data, request.resource.data));
+        || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data));
 
       match /rounds/{roundId} {
         allow read: if member(get(roomPath()).data);

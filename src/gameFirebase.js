@@ -4,7 +4,7 @@ export function gameFirebase(db, store) {
   const roomRef = code => store.doc(db, 'lernigoGameRooms', code);
   const hostedRoomRef = uid => store.doc(db, 'lernigoHostedRooms', uid);
   const rooms = () => store.collection(db, 'lernigoGameRooms');
-  // Reserve 20 round IDs per game so each rematch has fresh guess documents.
+  // Existing rooms may contain rounds from previous games.
   const roundOffset = match => match * 20;
   const roundRef = (code, round) => store.doc(roomRef(code), 'rounds', String(round));
   const guessRef = (code, round, uid) => store.doc(roundRef(code, round), 'guesses', uid);
@@ -13,16 +13,23 @@ export function gameFirebase(db, store) {
     async create(uid, { type, seconds, chapter, totalRounds }) {
       const hosted = hostedRoomRef(uid);
       const existing = (await store.getDocFromServer(hosted)).data();
-      if (existing) return existing.code;
-
-      const ownedRooms = await store.getDocsFromServer(store.query(rooms(), store.where('host', '==', uid)));
-      const latest = ownedRooms.docs.sort((a, b) =>
+      const ownedRooms = existing ? null
+        : await store.getDocsFromServer(store.query(rooms(), store.where('host', '==', uid)));
+      const latest = ownedRooms?.docs.sort((a, b) =>
         b.data().createdAt.toMillis() - a.data().createdAt.toMillis() || a.id.localeCompare(b.id))[0];
-      const code = latest?.id ?? newRoomCode();
+      const code = newRoomCode();
       return store.runTransaction(db, async transaction => {
         const saved = (await transaction.get(hosted)).data();
-        if (saved) return saved.code;
-        if (!latest) transaction.set(roomRef(code), {
+        const currentCode = saved?.code ?? latest?.id;
+        if (currentCode) {
+          const current = (await transaction.get(roomRef(currentCode))).data();
+          if (current && current.phase !== 'finished') {
+            if (!saved) transaction.set(hosted, { code: currentCode });
+            return currentCode;
+          }
+        }
+
+        transaction.set(roomRef(code), {
           code, host: uid, type, seconds,
           ...(chapter === 0 ? {} : { chapter }),
           ...(totalRounds === gameRounds ? {} : { totalRounds }),
@@ -31,22 +38,17 @@ export function gameFirebase(db, store) {
         });
         transaction.set(hosted, { code });
         return code;
+      }).catch(async error => {
+        if (error.code !== 'permission-denied') throw error;
+        // Another tab can replace the finished room before this write reaches the rules.
+        const saved = (await store.getDocFromServer(hosted)).data();
+        if (saved && saved.code !== existing?.code) {
+          const current = (await store.getDocFromServer(roomRef(saved.code))).data();
+          if (current && current.phase !== 'finished') return saved.code;
+        }
+        throw error;
       });
     },
-    replay: (code, uid, match) => store.runTransaction(db, async transaction => {
-      const ref = roomRef(code);
-      const hosted = hostedRoomRef(uid);
-      const room = (await transaction.get(ref)).data();
-      const saved = (await transaction.get(hosted)).data();
-      if (room?.host !== uid || room.phase !== 'finished' || (room.gameNumber ?? 0) !== match) {
-        throw new GameError('The room has changed. Try again.');
-      }
-      if (saved && saved.code !== code) {
-        throw new GameError(`Your regular room code is ${saved.code}. Open that room from Game to play again.`);
-      }
-      if (!saved) transaction.set(hosted, { code });
-      transaction.update(ref, { phase: 'lobby', round: 0, startedAt: null, gameNumber: match + 1 });
-    }),
     join: (code, uid, name) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();

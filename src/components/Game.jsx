@@ -54,7 +54,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
   }
 
   if (roomCode) return <GameRoom key={roomCode} {...{ uid, game, cards }} code={roomCode} playSound={playSound}
-    onExit={() => { setCode(roomCode); setRoomCode(''); }} />;
+    onOpen={setRoomCode} onExit={() => { setCode(''); setRoomCode(''); }} />;
 
   return (
     <div className="game-lobby">
@@ -75,7 +75,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
         </label>
         <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
       </form>
-      <RoomSettingsForm title="Host a room" submitLabel="Open my room" busy={busy}
+      <RoomSettingsForm title="Host a room" submitLabel="Open game room" busy={busy}
         onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings), 'Couldn’t open your room. Please try again.')} />
       {error && <p className="game-error" role="status">{error}</p>}
     </div>
@@ -106,7 +106,7 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
   return (
     <form className="panel game-panel" onSubmit={submit}>
       <h2>{title}</h2>
-      {!room && <p>Already have a room? Open it to change its settings and play again.</p>}
+      {!room && <p>Finished games get a new room code.</p>}
       <label className="field">German level
         <select value={level} disabled><option value="A1">A1</option></select>
       </label>
@@ -139,7 +139,7 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
   );
 }
 
-function GameRoom({ code, uid, game, cards, playSound, onExit }) {
+function GameRoom({ code, uid, game, cards, playSound, onOpen, onExit }) {
   const [room, setRoom] = useState(null);
   const [connectionError, setConnectionError] = useState('');
 
@@ -160,10 +160,10 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   }
 
   const match = room.gameNumber ?? 0;
-  return <RoomMatch key={match} {...{ code, uid, game, cards, playSound, onExit, room, match }} />;
+  return <RoomMatch key={match} {...{ code, uid, game, cards, playSound, onOpen, onExit, room, match }} />;
 }
 
-function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
+function RoomMatch({ code, uid, game, cards, playSound, onOpen, onExit, room, match }) {
   const [rounds, setRounds] = useState({});
   const [results, setResults] = useState({});
   const [resultsRetry, setResultsRetry] = useState(0);
@@ -240,6 +240,11 @@ function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
           <p>{level} · {chapter ? `Chapter ${chapter}` : 'All chapters'} · {totalRounds} {totalRounds === 1 ? 'round' : 'rounds'}</p>
           <p>{gameTypes[room.type]} · {room.seconds}s per question · {players.length}/{gameSeats} guests + host</p></div>
         <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
+          if (!host && room.phase === 'finished') {
+            onExit();
+            void game.leave(code, uid).catch(() => {});
+            return;
+          }
           if (!host) await game.leave(code, uid);
           onExit();
         }, 'Couldn’t leave the room. Please try again.')}>Leave room</button>
@@ -267,7 +272,9 @@ function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
           loading={Object.keys(results).length < revealed || !prompt}
           onRetry={() => setResultsRetry(value => value + 1)}
           onNext={host ? room.phase === 'finished'
-            ? () => void perform(() => game.replay(code, uid, match), 'Couldn’t reopen the room. Please try again.')
+            ? () => void perform(async () => {
+              onOpen(await game.create(uid, roomSettings(room)));
+            }, 'Couldn’t open the next game. Please try again.')
             : () => start() : null} nextDisabled={busy || (room.phase !== 'finished' && !currentRound)} />
       )}
 
@@ -330,9 +337,7 @@ function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, l
         ? <button className="primary game-next-round" type="button" onClick={onNext} disabled={nextDisabled}>
           {finished ? 'Next: Room settings' : 'Next round'}
         </button>
-        : <p className="game-waiting" role="status">{finished
-          ? 'Waiting for the host to reopen the room.'
-          : 'Waiting for the host to start the next round.'}</p>}
+        : !finished && <p className="game-waiting" role="status">Waiting for the host to start the next round.</p>}
     </div>
   );
 }
