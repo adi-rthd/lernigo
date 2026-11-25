@@ -334,6 +334,41 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 .game-scores li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
 .game-scores li > span:last-child { flex-shrink: 0; }
 .game-scores small { display: block; color: var(--muted); }
+.game-results { display: grid; gap: 16px; }
+.game-results-hero {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 20px 12px;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--forest-deep);
+  text-align: center;
+}
+.game-results-hero[data-outcome=incorrect] { background: var(--wrong-bg); color: var(--wrong); }
+.game-results-hero[data-outcome=missed] { background: var(--ivory); }
+.game-results-hero .game-results-round { margin: 0; color: inherit; font-size: .875rem; font-weight: 700; }
+.game-outcome-icon { font-size: 2.25rem; line-height: 1.1; }
+.game-results-hero h2 { font-size: clamp(1.55rem, 5vw, 2.25rem); line-height: 1.16; }
+.game-your-guess { max-width: 100%; }
+.game-correct-answer { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; overflow-wrap: anywhere; }
+.game-correct-answer p { font-size: .875rem; font-weight: 700; }
+.game-correct-answer strong { color: var(--forest-deep); font-size: 1.25rem; }
+.game-scoreboard h3 { margin: 0; font-size: 1rem; }
+.game-scoreboard .game-scores { margin: 8px 0 0; }
+.game-score-player { min-width: 0; }
+.game-score-player small { font-size: .875rem; }
+.game-scores li[data-outcome=correct] small { color: var(--forest-deep); }
+.game-scores li[data-outcome=incorrect] small { color: var(--wrong); }
+.game-you { color: var(--muted); font-size: .875rem; font-weight: 500; }
+.game-score-points { padding: 4px 8px; border-radius: 6px; background: var(--tint); color: var(--forest-deep); font-size: .875rem; font-weight: 700; }
+.game-results > p { margin: 0; }
+.game-next-round { width: 100%; min-height: 46px; }
+.game-waiting { text-align: center; }
+.game-clock { padding: 4px 8px; border-radius: 6px; background: var(--tint); font-variant-numeric: tabular-nums; }
+.game-clock[data-urgent] { background: var(--wrong-bg); color: var(--wrong); }
+.game-guess-state { display: grid; gap: 5px; padding: 12px 14px; border-radius: 8px; background: var(--tint); color: var(--forest-deep); overflow-wrap: anywhere; }
+.game-guess-state > span { font-size: .9rem; }
 .game-round .game-word { font: clamp(1.9rem, 5vw, 3.6rem)/1.12 Georgia, serif; color: var(--forest-deep); }
 .game-answer { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
 .game-answer .field { margin: 0; flex: 1 1 170px; }
@@ -380,6 +415,14 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 
   button, nav a {
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .game-results, .game-guess-state { animation: reveal-in 220ms ease-out; }
+  .game-outcome-icon { animation: game-result-pop 340ms ease-out; }
+  @keyframes game-result-pop {
+    from { opacity: 0; transform: scale(.72); }
+    65% { opacity: 1; transform: scale(1.12); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   .settings-toggle::after, .menu-icon span {

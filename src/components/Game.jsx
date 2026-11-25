@@ -224,24 +224,70 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
         ? <TimedRound key={room.round} {...{ room, prompt, code, uid, game, playSound }} />
         : <div className="panel game-panel"><p role="status">Loading the question…</p></div>)}
 
-      {(room.phase === 'results' || room.phase === 'finished') && <div className="panel game-panel">
-        <h2>{room.phase === 'finished' ? 'Game complete' : 'Round ' + room.round + ' results'}</h2>
-        {prompt && <p><strong>{prompt.word}</strong> · {prompt.answers.replaceAll(' | ', ' / ')}</p>}
-        {resultsError ? <p role="status">{resultsError} <button className="text-button" type="button"
-          onClick={() => setResultsRetry(value => value + 1)}>Retry scores</button></p>
-          : Object.keys(results).length < revealed || !prompt ? <p role="status">Loading scores…</p>
-          : <ol className="game-scores">{scores.map(({ player, name, points }) => {
-            const guess = results[room.round]?.[player];
-            return <li key={player}><span><strong>{name}</strong>
-              <small>{guess ? (correctGuess(guess, prompt.answers) ? 'Correct · ' : 'Incorrect · ') + guess : 'No answer'}</small>
-            </span><span>{points} {points === 1 ? 'point' : 'points'}</span></li>;
-          })}</ol>}
-        {room.phase === 'results' && (host
-          ? <button className="primary" type="button" onClick={start} disabled={busy || !currentRound}>Next round</button>
-          : <p>Waiting for the host to start the next round.</p>)}
-      </div>}
+      {(room.phase === 'results' || room.phase === 'finished') && (
+        <RoundResults key={room.round} {...{ room, prompt, resultsError, roundGuesses, scores, uid }}
+          loading={Object.keys(results).length < revealed || !prompt}
+          onRetry={() => setResultsRetry(value => value + 1)}
+          onNext={host ? start : null} nextDisabled={busy || !currentRound} />
+      )}
 
       {error && <p className="game-error" role="status">{error}</p>}
+    </div>
+  );
+}
+
+const outcomes = {
+  correct: { icon: '🎯', title: 'Correct!', label: 'Correct' },
+  incorrect: { icon: '💡', title: 'Not quite', label: 'Incorrect' },
+  missed: { icon: '⏱️', title: 'Time’s up', label: 'No guess' },
+};
+
+function roundOutcome(guess, answers) {
+  if (!guess) return 'missed';
+  return correctGuess(guess, answers) ? 'correct' : 'incorrect';
+}
+
+function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, loading, onRetry, onNext, nextDisabled }) {
+  const finished = room.phase === 'finished';
+  const ready = !resultsError && !loading && !!roundGuesses;
+  const guess = roundGuesses?.[uid];
+  const outcome = ready ? roundOutcome(guess, prompt.answers) : null;
+
+  return (
+    <div className="panel game-panel game-results">
+      <div className="game-results-hero" data-outcome={outcome} aria-live="polite">
+        <p className="game-results-round">{finished ? 'Game complete' : `Round ${room.round} of ${gameRounds}`}</p>
+        {outcome && <span className="game-outcome-icon" aria-hidden="true">{outcomes[outcome].icon}</span>}
+        <h2>{outcome ? outcomes[outcome].title : 'Round results'}</h2>
+        {guess && ready && <p className="game-your-guess">You guessed <strong>{guess}</strong></p>}
+      </div>
+
+      {prompt && <div className="game-correct-answer">
+        <p>Correct answer</p>
+        <strong lang="de">{prompt.word}</strong>
+        <span>{prompt.answers.replaceAll(' | ', ' / ')}</span>
+      </div>}
+
+      {resultsError ? <p role="status">{resultsError} <button className="text-button" type="button" onClick={onRetry}>Retry scores</button></p>
+        : !ready ? <p role="status">Loading scores…</p>
+        : <div className="game-scoreboard">
+          <h3>Scoreboard</h3>
+          <ol className="game-scores">{scores.map(({ player, name, points }) => {
+            const playerGuess = roundGuesses[player];
+            const playerOutcome = roundOutcome(playerGuess, prompt.answers);
+            return <li key={player} data-outcome={playerOutcome}>
+              <span className="game-score-player">
+                <strong>{name}{player === uid && <span className="game-you"> (you)</span>}</strong>
+                <small>{outcomes[playerOutcome].label}{playerGuess && ' · ' + playerGuess}</small>
+              </span>
+              <span className="game-score-points">{points} {points === 1 ? 'point' : 'points'}</span>
+            </li>;
+          })}</ol>
+        </div>}
+
+      {!finished && (onNext
+        ? <button className="primary game-next-round" type="button" onClick={onNext} disabled={nextDisabled}>Next round</button>
+        : <p className="game-waiting" role="status">Waiting for the host to start the next round.</p>)}
     </div>
   );
 }
@@ -308,12 +354,16 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
 
   return (
     <div className="panel game-panel game-round">
-      <div className="session-line"><h2>Round {room.round} of {gameRounds}</h2><strong>{remaining}s left</strong></div>
+      <div className="session-line"><h2>Round {room.round} of {gameRounds}</h2><strong className="game-clock" data-urgent={remaining > 0 && remaining <= 3 || undefined}>{remaining}s left</strong></div>
       <progress value={remaining} max={room.seconds} aria-label="Round time remaining" />
       <p className="game-word" lang="de">{prompt.word}</p>
       <p>{prompt.instruction}</p>
-      {!remaining ? <p role="status">Time’s up. Loading results…</p>
-        : submitted ? <p role="status">Guess saved. Results appear when time runs out.</p>
+      {!remaining ? <div className="game-guess-state" role="status"><strong>⏱️ Time’s up</strong><span>Loading round results…</span></div>
+        : submitted ? <div className="game-guess-state" role="status">
+          <strong><span aria-hidden="true">🔒 </span>Guess locked in</strong>
+          <span>You guessed <b>{submitted}</b></span>
+          <span>Results appear when the timer ends.</span>
+        </div>
         : <form className="game-answer" onSubmit={submit}>
           <label className="field">Your guess
             <input value={guess} onChange={event => setGuess(event.target.value)} maxLength={120}
