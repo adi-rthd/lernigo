@@ -203,7 +203,7 @@ export function useAccount() {
     const updated = { ...deviceHistory, [card.id]: addAnswer(deviceHistory[card.id], result) };
     const saved = writeLocal(accountKey(uid, 'device-history'), updated);
     setLocalHistory({ uid, value: updated });
-    return saved ? 'Firebase sync is unavailable. Answer saved on this device.'
+    return saved ? 'Couldn’t sync your answer. It’s saved on this device.'
       : 'Answer saved for this visit. Browser storage is unavailable.';
   }
 
@@ -219,7 +219,7 @@ export function useAccount() {
       : uid && !profileOnline ? 'Cloud settings are unavailable. You can keep studying on this device.' : '',
     progress: mergedHistory(cloudHistory, deviceHistory),
     progressMessage: hasDeviceAnswers ? 'Includes answers saved only on this device.'
-      : progressOnline ? 'Synced with Firebase' : 'Showing progress available on this device.',
+      : progressOnline ? 'Progress synced' : 'Showing progress available on this device.',
     saveProfile,
     register,
     signOut,

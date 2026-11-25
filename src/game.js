@@ -1,3 +1,5 @@
+export class GameError extends Error {}
+
 export const gameTypes = {
   mixed: 'Mixed',
   articles: 'Noun articles',

@@ -1,4 +1,4 @@
-import { gameSeats, newRoomCode, roomSettings } from './game.js';
+import { GameError, gameRounds, gameSeats, newRoomCode, roomSettings } from './game.js';
 
 export function gameFirebase(db, store) {
   const roomRef = code => store.doc(db, 'lernigoGameRooms', code);
@@ -6,11 +6,14 @@ export function gameFirebase(db, store) {
   const guessRef = (code, round, uid) => store.doc(roundRef(code, round), 'guesses', uid);
 
   return {
-    async create(uid, settings) {
+    async create(uid, { type, seconds, chapter, totalRounds }) {
       const code = newRoomCode();
       const ref = roomRef(code);
       await store.setDoc(ref, {
-        code, host: uid, ...settings, players: {}, phase: 'lobby', round: 0,
+        code, host: uid, type, seconds,
+        ...(chapter === 0 ? {} : { chapter }),
+        ...(totalRounds === gameRounds ? {} : { totalRounds }),
+        players: {}, phase: 'lobby', round: 0,
         createdAt: store.serverTimestamp(), startedAt: null,
       });
       return code;
@@ -18,10 +21,10 @@ export function gameFirebase(db, store) {
     join: (code, uid, name) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();
-      if (!room) throw Error('Room code not found.');
+      if (!room) throw new GameError('Room code not found.');
       if (room.host === uid || Object.hasOwn(room.players, uid)) return;
-      if (room.phase !== 'lobby') throw Error('This game has already started.');
-      if (Object.keys(room.players).length >= gameSeats) throw Error('This room already has 10 players.');
+      if (room.phase !== 'lobby') throw new GameError('This game has already started.');
+      if (Object.keys(room.players).length >= gameSeats) throw new GameError('This room already has 10 players.');
       transaction.update(ref, { players: { ...room.players, [uid]: name } });
     }),
     leave: (code, uid) => store.runTransaction(db, async transaction => {
@@ -45,16 +48,21 @@ export function gameFirebase(db, store) {
       const snapshot = await store.getDocsFromServer(store.collection(roundRef(code, round), 'guesses'));
       return Object.fromEntries(snapshot.docs.map(guess => [guess.id, guess.data().answer]));
     },
-    updateSettings: (code, settings) => store.updateDoc(roomRef(code), settings),
+    updateSettings: (code, { type, seconds, chapter, totalRounds }, room) => {
+      const previous = roomSettings(room);
+      const settings = { type, seconds, chapter, totalRounds };
+      const changes = Object.entries(settings).filter(([key, value]) => value !== previous[key]);
+      if (changes.length) return store.updateDoc(roomRef(code), Object.fromEntries(changes));
+    },
     start: (code, round, cardId, settings) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();
       if (!room || !['lobby', 'results'].includes(room.phase) || room.round + 1 !== round) {
-        throw Error('The room has changed. Try again.');
+        throw new GameError('The room has changed. Try again.');
       }
       const current = roomSettings(room);
       if (round > current.totalRounds || Object.keys(current).some(key => current[key] !== settings[key])) {
-        throw Error('Room settings changed. Refresh them before starting the round.');
+        throw new GameError('Room settings changed. Refresh them before starting the round.');
       }
       transaction.update(ref, { phase: 'playing', round, startedAt: store.serverTimestamp() });
       transaction.set(roundRef(code, round), { cardId, startedAt: store.serverTimestamp() });

@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { correctGuess, gameCards, gamePrompt, gameChapters, gameSeats, gameTypes, maxGameRounds, roomSettings } from '../game.js';
+import { GameError, correctGuess, gameCards, gamePrompt, gameChapters, gameSeats, gameTypes, maxGameRounds, roomSettings } from '../game.js';
 import { shuffle } from '../study.js';
 
 const validCode = /^[2-9A-HJ-NP-Z]{6}$/;
 
-function gameError(error) {
-  if (error.code === 'permission-denied') return 'Firebase denied this action. The room may have changed, or game permissions may need updating.';
-  if (error.code) return 'Couldn’t reach the game room. Check your connection and try again.';
-  return error.message;
+function gameError(error, fallback) {
+  if (error instanceof GameError) return error.message;
+  if (error?.code === 'unavailable' || error?.code === 'deadline-exceeded') {
+    return 'Check your internet connection and try again.';
+  }
+  return fallback;
 }
 
 export default function Game({ active, user, online, name, game, cards, sound, onSignIn }) {
@@ -37,7 +39,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  async function openRoom(event, action) {
+  async function openRoom(event, action, fallback) {
     event.preventDefault();
     unlock?.();
     setBusy(true);
@@ -45,7 +47,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
     try {
       setRoomCode(await action());
     } catch (error) {
-      setError(gameError(error));
+      setError(gameError(error, fallback));
     } finally {
       setBusy(false);
     }
@@ -58,10 +60,10 @@ function GameLobby({ uid, name, game, cards, sound }) {
     <div className="game-lobby">
       <form className="panel game-panel" onSubmit={event => void openRoom(event, async () => {
         const trimmed = displayName.trim();
-        if (!trimmed) throw Error('Enter a display name.');
+        if (!trimmed) throw new GameError('Enter a display name.');
         await game.join(code, uid, trimmed);
         return code;
-      })}>
+      }, 'Couldn’t join the room. Check the room code and try again.')}>
         <h2>Join a room</h2>
         <label className="field">Room code
           <input name="code" value={code} onChange={event => setCode(event.target.value.toUpperCase().trim())}
@@ -74,7 +76,7 @@ function GameLobby({ uid, name, game, cards, sound }) {
         <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
       </form>
       <RoomSettingsForm title="Create a room" submitLabel="Create room" busy={busy}
-        onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings))} />
+        onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings), 'Couldn’t create the room. Please try again.')} />
       {error && <p className="game-error" role="status">{error}</p>}
     </div>
   );
@@ -149,7 +151,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   }, [answers, playSound, revealed, roundGuesses, uid]);
 
   useEffect(() => {
-    const failed = error => setConnectionError(gameError(error));
+    const failed = error => setConnectionError(gameError(error, 'Couldn’t load this room. Go back to Game and try joining again.'));
     const endRoom = game.watchRoom(code, next => {
       if (next) {
         setRoom(next);
@@ -169,17 +171,17 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
         setResults(previous => ({ ...previous, ...Object.fromEntries(guesses) }));
         setResultsError('');
       }
-    }).catch(error => { if (current) setResultsError(gameError(error)); });
+    }).catch(error => { if (current) setResultsError(gameError(error, 'Couldn’t load the scores.')); });
     return () => { current = false; };
   }, [code, game, results, resultsRetry, revealed]);
 
-  async function perform(action) {
+  async function perform(action, fallback) {
     setError('');
     setBusy(true);
     try {
       await action();
     } catch (error) {
-      setError(gameError(error));
+      setError(gameError(error, fallback));
     } finally {
       setBusy(false);
     }
@@ -194,7 +196,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
       setError('There are no more words for this question type.');
       return;
     }
-    void perform(() => game.start(code, next, card.id, settings));
+    void perform(() => game.start(code, next, card.id, settings), 'Couldn’t start the round. Please try again.');
   }
 
   if (connectionError || !room) {
@@ -225,7 +227,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
         <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
           if (!host && room.phase === 'lobby') await game.leave(code, uid);
           onExit();
-        })}>Leave room</button>
+        }, 'Couldn’t leave the room. Please try again.')}>Leave room</button>
       </div>
 
       {room.phase === 'lobby' && <div className="panel game-panel">
@@ -238,7 +240,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
         title="Room settings" submitLabel="Save settings" busy={busy} room={room} onStart={start}
         onSubmit={(event, settings) => {
           event.preventDefault();
-          void perform(() => game.updateSettings(code, settings));
+          void perform(() => game.updateSettings(code, settings, room), 'Couldn’t save these settings. Please try again.');
         }} />}
 
       {room.phase === 'playing' && (prompt
@@ -337,7 +339,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
 
   useEffect(() => {
     return game.watchGuess(code, room.round, uid, answer => { if (answer) setSubmitted(answer); },
-      error => setError(gameError(error)));
+      error => setError(gameError(error, 'Couldn’t check your guess.')));
   }, [code, game, room.round, uid]);
 
   useEffect(() => {
@@ -350,7 +352,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
       } catch (error) {
         if (!current) return;
         if (attempts) timer = setTimeout(() => void reveal(attempts - 1), 1000);
-        else setError(gameError(error));
+        else setError(gameError(error, 'Couldn’t show the round results.'));
       }
     }
     timer = setTimeout(() => void reveal(4), 300);
@@ -367,7 +369,9 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
       await game.guess(code, room.round, uid, answer);
       setSubmitted(answer);
     } catch (error) {
-      setError(error.code === 'permission-denied' ? 'This guess was rejected. Time may have run out or you already answered.' : gameError(error));
+      setError(gameError(error, Date.now() >= deadline
+        ? 'Time ran out before your guess could be saved.'
+        : 'Couldn’t save your guess. Try again while there’s time left.'));
     } finally {
       setBusy(false);
     }
@@ -393,7 +397,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
           <button className="primary" type="submit" disabled={busy || !guess.trim()}>{busy ? 'Submitting…' : 'Submit guess'}</button>
         </form>}
       {error && <p className="game-error" role="status">{error}{!remaining && <button className="text-button" type="button"
-        onClick={() => void game.reveal(code, room.round).catch(error => setError(gameError(error)))}>Retry results</button>}</p>}
+        onClick={() => void game.reveal(code, room.round).catch(error => setError(gameError(error, 'Couldn’t show the round results.')))}>Retry results</button>}</p>}
     </div>
   );
 }

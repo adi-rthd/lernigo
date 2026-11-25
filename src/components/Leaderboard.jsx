@@ -23,7 +23,7 @@ export default function Leaderboard({ initialLevel, user, api, ready }) {
 
   const board = results?.level === level && results?.uid === uid ? results : null;
   const entries = board?.entries ?? [];
-  const message = !uid ? ready ? 'Sign in to see the rankings.' : 'Connecting to Firebase…'
+  const message = !uid ? ready ? 'Sign in to see the rankings.' : 'Loading rankings…'
     : board?.error ? 'Rankings couldn’t load. Try again later.'
     : board ? 'No scores yet for ' + level + '.' : 'Loading rankings…';
   let rank = 0;

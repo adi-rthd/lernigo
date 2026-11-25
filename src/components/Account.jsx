@@ -108,7 +108,7 @@ const authErrors = {
   'auth/weak-password': 'Choose a stronger password with at least six characters.',
   'auth/too-many-requests': 'Too many attempts. Try again later.',
   'auth/network-request-failed': 'Check your internet connection and try again.',
-  'auth/operation-not-allowed': 'This sign-in method is disabled in Firebase.',
+  'auth/operation-not-allowed': 'This sign-in option is currently unavailable.',
   'auth/popup-closed-by-user': 'The Google sign-in window was closed. You can try again.',
   'auth/popup-blocked': 'Allow pop-ups for Lernigo and try Google sign-in again.',
   'auth/unauthorized-domain': 'Google sign-in is unavailable on this domain.',
@@ -143,7 +143,7 @@ export function AccountDialog({ account, onClose, onRegistered }) {
       await action();
       setMessage(success);
     } catch (error) {
-      setMessage(authErrors[error.code] || 'Firebase could not complete the request. Try again.');
+      setMessage(authErrors[error.code] || 'Something went wrong. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -197,8 +197,8 @@ export function AccountDialog({ account, onClose, onRegistered }) {
         <p>{user.email}</p>
         <p className="field-hint">Lernigo ID {user.uid}</p>
         {needsPassword && <p>Set a password if you also want to sign in with your email.</p>}
-      </div> : <p id="auth-description">{user ? account.profile?.username ? '@' + account.profile.username + ' · ' + user.email : user.email : !ready ? 'Connecting to Firebase…'
-        : api ? 'Sign in to sync your practice and settings across devices.' : 'Firebase could not connect. Reload this page to try again.'}</p>}
+      </div> : <p id="auth-description">{user ? account.profile?.username ? '@' + account.profile.username + ' · ' + user.email : user.email : !ready ? 'Connecting to Lernigo…'
+        : api ? 'Sign in to sync your practice and settings across devices.' : 'Couldn’t load your account. Reload this page to try again.'}</p>}
       {api && ready && !user && !registering &&
         <button type="button" className="outline google-sign-in" disabled={busy}
           onClick={() => void perform(() => api.signInWithGoogle())}>Continue with Google</button>}
