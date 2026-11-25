@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { practiceExample } from '../data/practice-examples.js';
 import { english, german } from '../study.js';
 
-export default function AnswerDetails({ card, active }) {
+export default function AnswerDetails({ card, active, revealOnMobile = false }) {
   const word = german(card);
   const details = useRef(null);
   const [error, setError] = useState('');
@@ -14,7 +14,7 @@ export default function AnswerDetails({ card, active }) {
   }, [active]);
 
   useEffect(() => {
-    if (!window.matchMedia('(max-width: 690px)').matches) return;
+    if (!revealOnMobile || !window.matchMedia('(max-width: 690px)').matches) return;
 
     const frame = window.requestAnimationFrame(() => {
       details.current?.scrollIntoView({
@@ -24,7 +24,7 @@ export default function AnswerDetails({ card, active }) {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, []);
+  }, [revealOnMobile]);
 
   function listen() {
     const synthesis = window.speechSynthesis;

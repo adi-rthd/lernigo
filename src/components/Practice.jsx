@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import AnswerDetails from './AnswerDetails.jsx';
 import { choicesFor, english, german, shuffle } from '../study.js';
 
@@ -148,6 +148,8 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
   const focusAfterRender = useRef(false);
   const flashButton = useRef(null);
   const firstChoice = useRef(null);
+  const quizPrompt = useRef(null);
+  const quizOptions = useRef(null);
   const nextButton = useRef(null);
   const restartButton = useRef(null);
   const pending = deck.filter(card => !answeredIds.has(card.id) && (!unansweredOnly || !completedIds.has(card.id)));
@@ -204,12 +206,24 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
     if (card && !saving) setFlippedFor(previous => previous === flipKey ? null : flipKey);
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active || saving || !focusAfterRender.current) return;
     focusAfterRender.current = false;
     const target = card ? quiz ? answer ? nextButton : firstChoice : flashButton : restartButton;
-    const fixedNextButton = target === nextButton && window.matchMedia('(max-width: 690px)').matches;
-    target.current?.focus({ preventScroll: fixedNextButton });
+    target.current?.focus({ preventScroll: quiz && !!card });
+    if (target === firstChoice) {
+      const prompt = quizPrompt.current;
+      const options = quizOptions.current;
+      const viewport = window.visualViewport;
+      const top = viewport?.offsetTop ?? 0;
+      const bottom = top + (viewport?.height ?? window.innerHeight);
+      if (prompt && options) {
+        const promptTop = prompt.getBoundingClientRect().top;
+        if (promptTop < top || (options.getBoundingClientRect().bottom > bottom && promptTop > top + 12)) {
+          prompt.scrollIntoView({ block: 'start', behavior: 'instant' });
+        }
+      }
+    }
   });
 
   useEffect(() => {
@@ -240,7 +254,7 @@ function Session({ active, deck, completedIds, unansweredOnly, candidates, mode,
           record={record} saving={saving} ready={ready} />
       )}
       {card && quiz && (
-        <Quiz {...{ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton }}
+        <Quiz {...{ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, quizPrompt, quizOptions }}
           pick={choice => void record(choice.correct ? 'right' : 'wrong', choice)}
           onNext={() => answerSaved ? next() : void record(answer.correct ? 'right' : 'wrong', answer)} />
       )}
@@ -288,22 +302,22 @@ function Flashcard({ card, active, direction, flipped, flip, focus, record, savi
           <span aria-hidden="true">✓</span> Got it right <kbd>2</kbd>
         </button>
       </div>
-      {flipped && <AnswerDetails key={card.id} card={card} active={active} />}
+      {flipped && <AnswerDetails key={card.id} card={card} active={active} revealOnMobile />}
       <p className="keyboard"><kbd>Space</kbd> reveal · <kbd>1</kbd> wrong · <kbd>2</kbd> right</p>
     </div>
   );
 }
 
-function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, pick, onNext }) {
+function Quiz({ card, active, germanAnswer, choices, answer, saving, ready, answerSaved, index, total, firstChoice, nextButton, quizPrompt, quizOptions, pick, onNext }) {
   const prompt = germanAnswer ? english(card) : german(card);
   return (
     <div className={answer ? 'quiz-answered' : undefined}>
-      <div className="panel quiz-prompt">
+      <div ref={quizPrompt} className="panel quiz-prompt">
         <div className="card-top"><span className="kind">{card.kind === 'noun' ? 'Noun' : 'Verb'}</span>{germanAnswer ? 'English' : 'German'}</div>
         <p key={card.id + '-' + germanAnswer} id="quiz-prompt" className={prompt.length > 28 ? 'long' : undefined} lang={germanAnswer ? 'en' : 'de'}>{prompt}</p>
         <p className="card-hint">{germanAnswer ? 'Choose the German translation.' : 'Choose the English meaning.'}</p>
       </div>
-      <div className="quiz-options" role="group" aria-label="Answer choices">
+      <div ref={quizOptions} className="quiz-options" role="group" aria-label="Answer choices">
         {choices.map((choice, option) => (
           <button key={choice.text} type="button" ref={option === 0 ? firstChoice : null}
             disabled={!!answer || saving || !ready}
