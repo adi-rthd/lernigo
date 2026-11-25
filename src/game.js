@@ -6,6 +6,18 @@ export const gameTypes = {
 };
 
 export const gameRounds = 10;
+export const maxGameRounds = 20;
+export const gameChapters = Array.from({ length: 12 }, (_, index) => index + 1);
+
+export function roomSettings(room) {
+  return {
+    level: 'A1',
+    chapter: room?.chapter ?? 0,
+    totalRounds: room?.totalRounds ?? gameRounds,
+    type: room?.type ?? 'mixed',
+    seconds: room?.seconds ?? 10,
+  };
+}
 export const gameSeats = 10;
 
 const codeAlphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -23,14 +35,15 @@ export function gamePrompt(card, type, round) {
   };
 }
 
-export function gameCards(cards, type, round) {
+export function gameCards(cards, type, round, chapter = 0) {
+  const deck = chapter ? cards.filter(card => card.chapters.includes(chapter)) : cards;
   if (type === 'articles' || (type === 'mixed' && (round - 1) % 3 === 0)) {
-    return cards.filter(card => ['der', 'die', 'das'].includes(card.article));
+    return deck.filter(card => ['der', 'die', 'das'].includes(card.article));
   }
   if (type === 'nouns' || (type === 'mixed' && (round - 1) % 3 === 1)) {
-    return cards.filter(card => card.kind === 'noun');
+    return deck.filter(card => card.kind === 'noun');
   }
-  return cards.filter(card => card.kind === 'verb');
+  return deck.filter(card => card.kind === 'verb');
 }
 
 function normalizeAnswer(value) {

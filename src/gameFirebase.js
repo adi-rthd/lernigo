@@ -1,4 +1,4 @@
-import { gameRounds, gameSeats, newRoomCode } from './game.js';
+import { gameSeats, newRoomCode, roomSettings } from './game.js';
 
 export function gameFirebase(db, store) {
   const roomRef = code => store.doc(db, 'lernigoGameRooms', code);
@@ -6,11 +6,11 @@ export function gameFirebase(db, store) {
   const guessRef = (code, round, uid) => store.doc(roundRef(code, round), 'guesses', uid);
 
   return {
-    async create(uid, type, seconds) {
+    async create(uid, settings) {
       const code = newRoomCode();
       const ref = roomRef(code);
       await store.setDoc(ref, {
-        code, host: uid, type, seconds, players: {}, phase: 'lobby', round: 0,
+        code, host: uid, ...settings, players: {}, phase: 'lobby', round: 0,
         createdAt: store.serverTimestamp(), startedAt: null,
       });
       return code;
@@ -45,14 +45,17 @@ export function gameFirebase(db, store) {
       const snapshot = await store.getDocsFromServer(store.collection(roundRef(code, round), 'guesses'));
       return Object.fromEntries(snapshot.docs.map(guess => [guess.id, guess.data().answer]));
     },
-    updateSettings: (code, type, seconds) => store.updateDoc(roomRef(code), { type, seconds }),
-    start: (code, round, cardId, type) => store.runTransaction(db, async transaction => {
+    updateSettings: (code, settings) => store.updateDoc(roomRef(code), settings),
+    start: (code, round, cardId, settings) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();
       if (!room || !['lobby', 'results'].includes(room.phase) || room.round + 1 !== round) {
         throw Error('The room has changed. Try again.');
       }
-      if (room.type !== type) throw Error('The question type has changed. Try starting again.');
+      const current = roomSettings(room);
+      if (round > current.totalRounds || Object.keys(current).some(key => current[key] !== settings[key])) {
+        throw Error('Room settings changed. Refresh them before starting the round.');
+      }
       transaction.update(ref, { phase: 'playing', round, startedAt: store.serverTimestamp() });
       transaction.set(roundRef(code, round), { cardId, startedAt: store.serverTimestamp() });
     }),
@@ -60,7 +63,7 @@ export function gameFirebase(db, store) {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();
       if (room?.phase === 'playing' && room.round === round) {
-        transaction.update(ref, { phase: round === gameRounds ? 'finished' : 'results' });
+        transaction.update(ref, { phase: round === roomSettings(room).totalRounds ? 'finished' : 'results' });
       }
     }),
     guess: (code, round, uid, answer) => store.setDoc(guessRef(code, round, uid), {

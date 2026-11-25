@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { correctGuess, gameCards, gamePrompt, gameRounds, gameSeats, gameTypes } from '../game.js';
+import { correctGuess, gameCards, gamePrompt, gameChapters, gameSeats, gameTypes, maxGameRounds, roomSettings } from '../game.js';
 import { shuffle } from '../study.js';
 
 const validCode = /^[2-9A-HJ-NP-Z]{6}$/;
@@ -74,28 +74,46 @@ function GameLobby({ uid, name, game, cards, sound }) {
         <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
       </form>
       <RoomSettingsForm title="Create a room" submitLabel="Create room" busy={busy}
-        onSubmit={(event, type, seconds) => void openRoom(event, () => game.create(uid, type, seconds))} />
+        onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings))} />
       {error && <p className="game-error" role="status">{error}</p>}
     </div>
   );
 }
 
 function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart }) {
-  const [type, setType] = useState(room?.type ?? 'mixed');
-  const [seconds, setSeconds] = useState(room?.seconds ?? 10);
-  const changed = !room || type !== room.type || seconds !== room.seconds;
+  const defaults = roomSettings(room);
+  const [settings, setSettings] = useState(defaults);
+  const { level, chapter, type, seconds, totalRounds } = settings;
+  const changed = !room || Object.keys(defaults).some(key => settings[key] !== defaults[key]);
+
+  function change(key, value) {
+    setSettings(previous => ({ ...previous, [key]: value }));
+  }
 
   return (
-    <form className="panel game-panel" onSubmit={event => onSubmit(event, type, seconds)}>
+    <form className="panel game-panel" onSubmit={event => onSubmit(event, settings)}>
       <h2>{title}</h2>
+      <label className="field">German level
+        <select value={level} disabled><option value="A1">A1</option></select>
+      </label>
+      <label className="field">Chapter
+        <select value={chapter} disabled={busy} onChange={event => change('chapter', Number(event.target.value))}>
+          <option value={0}>All chapters</option>
+          {gameChapters.map(number => <option key={number} value={number}>Chapter {number}</option>)}
+        </select>
+      </label>
       <label className="field">Question type
-        <select value={type} disabled={busy} onChange={event => setType(event.target.value)}>
+        <select value={type} disabled={busy} onChange={event => change('type', event.target.value)}>
           {Object.entries(gameTypes).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
         </select>
       </label>
       <label className="field">Seconds per question
         <input type="number" min={5} max={60} step={1} value={seconds} disabled={busy}
-          onChange={event => setSeconds(event.target.value === '' ? '' : Number(event.target.value))} required />
+          onChange={event => change('seconds', event.target.value === '' ? '' : Number(event.target.value))} required />
+      </label>
+      <label className="field">Number of rounds
+        <input type="number" min={1} max={maxGameRounds} step={1} value={totalRounds} disabled={busy}
+          onChange={event => change('totalRounds', event.target.value === '' ? '' : Number(event.target.value))} required />
       </label>
       <div className="game-answer">
         <button className={room ? 'outline' : 'primary'} type="submit" disabled={busy || !changed}>{submitLabel}</button>
@@ -168,14 +186,15 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   }
 
   function start() {
+    const settings = roomSettings(room);
     const next = room.round + 1;
     const used = new Set(Object.values(rounds).map(round => round.cardId));
-    const card = shuffle(gameCards(cards, room.type, next).filter(card => !used.has(card.id)))[0];
+    const card = shuffle(gameCards(cards, room.type, next, settings.chapter).filter(card => !used.has(card.id)))[0];
     if (!card) {
       setError('There are no more words for this question type.');
       return;
     }
-    void perform(() => game.start(code, next, card.id, room.type));
+    void perform(() => game.start(code, next, card.id, settings));
   }
 
   if (connectionError || !room) {
@@ -185,6 +204,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
     </div>;
   }
 
+  const { level, chapter, totalRounds } = roomSettings(room);
   const players = Object.entries(room.players);
   const currentRound = rounds[room.round];
   const scores = [[room.host, 'Host'], ...players].map(([player, name]) => {
@@ -200,6 +220,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
     <div className="game-room">
       <div className="panel game-panel game-room-heading">
         <div><h2>Room <span className="game-code">{code}</span></h2>
+          <p>{level} · {chapter ? `Chapter ${chapter}` : 'All chapters'} · {totalRounds} {totalRounds === 1 ? 'round' : 'rounds'}</p>
           <p>{gameTypes[room.type]} · {room.seconds}s per question · {players.length}/{gameSeats} guests + host</p></div>
         <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
           if (!host && room.phase === 'lobby') await game.leave(code, uid);
@@ -213,11 +234,11 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
         {!!players.length && <ul className="game-players">{players.map(([id, name]) => <li key={id}>{name}</li>)}</ul>}
       </div>}
 
-      {host && room.phase === 'lobby' && <RoomSettingsForm key={room.type + ':' + room.seconds}
+      {host && room.phase === 'lobby' && <RoomSettingsForm key={JSON.stringify(roomSettings(room))}
         title="Room settings" submitLabel="Save settings" busy={busy} room={room} onStart={start}
-        onSubmit={(event, type, seconds) => {
+        onSubmit={(event, settings) => {
           event.preventDefault();
-          void perform(() => game.updateSettings(code, type, seconds));
+          void perform(() => game.updateSettings(code, settings));
         }} />}
 
       {room.phase === 'playing' && (prompt
@@ -256,7 +277,7 @@ function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, l
   return (
     <div className="panel game-panel game-results">
       <div className="game-results-hero" data-outcome={outcome} aria-live="polite">
-        <p className="game-results-round">{finished ? 'Game complete' : `Round ${room.round} of ${gameRounds}`}</p>
+        <p className="game-results-round">{finished ? 'Game complete' : `Round ${room.round} of ${roomSettings(room).totalRounds}`}</p>
         {outcome && <span className="game-outcome-icon" aria-hidden="true">{outcomes[outcome].icon}</span>}
         <h2>{outcome ? outcomes[outcome].title : 'Round results'}</h2>
         {guess && ready && <p className="game-your-guess">You guessed <strong>{guess}</strong></p>}
@@ -354,7 +375,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
 
   return (
     <div className="panel game-panel game-round">
-      <div className="session-line"><h2>Round {room.round} of {gameRounds}</h2><strong className="game-clock" data-urgent={remaining > 0 && remaining <= 3 || undefined}>{remaining}s left</strong></div>
+      <div className="session-line"><h2>Round {room.round} of {roomSettings(room).totalRounds}</h2><strong className="game-clock" data-urgent={remaining > 0 && remaining <= 3 || undefined}>{remaining}s left</strong></div>
       <progress value={remaining} max={room.seconds} aria-label="Round time remaining" />
       <p className="game-word" lang="de">{prompt.word}</p>
       <p>{prompt.instruction}</p>

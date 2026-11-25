@@ -107,12 +107,16 @@ service cloud.firestore {
 
       function validSettings(room) {
         return room.type in ['mixed', 'articles', 'nouns', 'verbs']
-          && room.seconds is int && room.seconds >= 5 && room.seconds <= 60;
+          && room.seconds is int && room.seconds >= 5 && room.seconds <= 60
+          && room.get('level', 'A1') == 'A1'
+          && room.get('chapter', 0) is int && room.get('chapter', 0) >= 0 && room.get('chapter', 0) <= 12
+          && room.get('totalRounds', 10) is int
+          && room.get('totalRounds', 10) >= 1 && room.get('totalRounds', 10) <= 20;
       }
 
       function validNewRoom(room) {
         return signedIn() && room.host == request.auth.uid
-          && room.keys().hasOnly(['code', 'host', 'type', 'seconds', 'players', 'phase', 'round', 'createdAt', 'startedAt'])
+          && room.keys().hasOnly(['code', 'host', 'type', 'seconds', 'level', 'chapter', 'totalRounds', 'players', 'phase', 'round', 'createdAt', 'startedAt'])
           && code.matches('^[2-9A-HJ-NP-Z]{6}$') && room.code == code
           && validSettings(room)
           && room.players is map && room.players.size() == 0
@@ -133,7 +137,7 @@ service cloud.firestore {
 
       function updateSettings(previous, next) {
         return host(previous) && previous.phase == 'lobby'
-          && next.diff(previous).affectedKeys().hasOnly(['type', 'seconds'])
+          && next.diff(previous).affectedKeys().hasOnly(['type', 'seconds', 'level', 'chapter', 'totalRounds'])
           && validSettings(next);
       }
 
@@ -142,7 +146,7 @@ service cloud.firestore {
         let roundPath = /databases/$(database)/documents/lernigoGameRooms/$(code)/rounds/$(id);
         return host(previous) && previous.players.size() > 0 && previous.phase in ['lobby', 'results']
           && next.diff(previous).affectedKeys().hasOnly(['phase', 'round', 'startedAt'])
-          && next.phase == 'playing' && next.round == previous.round + 1 && next.round <= 10
+          && next.phase == 'playing' && next.round == previous.round + 1 && next.round <= previous.get('totalRounds', 10)
           && next.startedAt == request.time && !exists(roundPath)
           && getAfter(roundPath).data.startedAt == request.time;
       }
@@ -150,7 +154,7 @@ service cloud.firestore {
       function revealRound(previous, next) {
         return member(previous) && previous.phase == 'playing' && request.time >= deadline(previous)
           && next.diff(previous).affectedKeys().hasOnly(['phase'])
-          && next.phase == (previous.round == 10 ? 'finished' : 'results');
+          && next.phase == (previous.round == previous.get('totalRounds', 10) ? 'finished' : 'results');
       }
 
       allow get: if signedIn() && (resource == null || resource.data.phase == 'lobby' || member(resource.data));
@@ -162,11 +166,12 @@ service cloud.firestore {
       match /rounds/{roundId} {
         allow read: if member(get(roomPath()).data);
         allow create: if host(get(roomPath()).data)
-          && roundId.matches('^([1-9]|10)$')
+          && roundId.matches('^([1-9]|1[0-9]|20)$')
           && request.resource.data.keys().hasOnly(['cardId', 'startedAt'])
           && request.resource.data.cardId is string && request.resource.data.cardId.matches('^[0-9a-f]{16}$')
           && request.resource.data.startedAt == request.time
           && getAfter(roomPath()).data.phase == 'playing'
+          && int(roundId) <= get(roomPath()).data.get('totalRounds', 10)
           && getAfter(roomPath()).data.round == int(roundId)
           && getAfter(roomPath()).data.startedAt == request.time;
 
