@@ -49,7 +49,6 @@ export default function PracticeBanner() {
 
   return banners.map(banner => (
     <aside key={banner.side} className={`practice-banner practice-banner-${banner.side}`} aria-label={`Advertisement on the ${banner.side}`}>
-      <p>Advertisement</p>
       {showLiveAd
         ? <iframe title={`Display advertisement on the ${banner.side}`} sandbox="allow-scripts"
             width="160" height={banner.height} srcDoc={bannerDocument(banner)} />

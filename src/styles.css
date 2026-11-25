@@ -380,7 +380,6 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
   .practice-banner { position: absolute; top: 30px; width: 160px; }
   .practice-banner-left { right: calc(50% + 402px); }
   .practice-banner-right { left: calc(50% + 402px); }
-  .practice-banner p { margin-bottom: 6px; text-align: center; color: var(--muted); font-size: .8rem; }
   .practice-banner iframe { display: block; border: 0; }
   .practice-banner-preview {
     display: grid;
