@@ -59,7 +59,7 @@ export function gameFirebase(db, store) {
     leave: (code, uid) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();
-      if (!room || room.phase !== 'lobby' || !Object.hasOwn(room.players, uid)) return;
+      if (!room || room.host === uid || !Object.hasOwn(room.players, uid)) return;
       const players = { ...room.players };
       delete players[uid];
       transaction.update(ref, { players });

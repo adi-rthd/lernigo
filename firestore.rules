@@ -148,10 +148,10 @@ service cloud.firestore {
       function updatePlayers(previous, next) {
         let uid = request.auth.uid;
         let name = next.players.get(uid, '');
-        return previous.phase == 'lobby' && !host(previous) && next.players is map
+        return !host(previous) && next.players is map
           && next.diff(previous).affectedKeys().hasOnly(['players'])
           && next.players.diff(previous.players).affectedKeys().hasOnly([uid])
-          && ((!(uid in previous.players) && uid in next.players && next.players.size() <= 10
+          && ((previous.phase == 'lobby' && !(uid in previous.players) && uid in next.players && next.players.size() <= 10
               && name is string && name.size() >= 1 && name.size() <= 24)
             || (uid in previous.players && !(uid in next.players)));
       }
@@ -165,7 +165,8 @@ service cloud.firestore {
       function startRound(previous, next) {
         let id = string(roundOffset(previous) + next.round);
         let roundPath = /databases/$(database)/documents/lernigoGameRooms/$(code)/rounds/$(id);
-        return host(previous) && previous.players.size() > 0 && previous.phase in ['lobby', 'results']
+        return host(previous) && (previous.phase == 'results'
+            || (previous.phase == 'lobby' && previous.players.size() > 0))
           && next.diff(previous).affectedKeys().hasOnly(['phase', 'round', 'startedAt'])
           && next.phase == 'playing' && next.round == previous.round + 1 && next.round <= previous.get('totalRounds', 10)
           && next.startedAt == request.time && !exists(roundPath)

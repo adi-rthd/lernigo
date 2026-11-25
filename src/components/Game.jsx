@@ -240,7 +240,7 @@ function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
           <p>{level} · {chapter ? `Chapter ${chapter}` : 'All chapters'} · {totalRounds} {totalRounds === 1 ? 'round' : 'rounds'}</p>
           <p>{gameTypes[room.type]} · {room.seconds}s per question · {players.length}/{gameSeats} guests + host</p></div>
         <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
-          if (!host && room.phase === 'lobby') await game.leave(code, uid);
+          if (!host) await game.leave(code, uid);
           onExit();
         }, 'Couldn’t leave the room. Please try again.')}>Leave room</button>
       </div>
