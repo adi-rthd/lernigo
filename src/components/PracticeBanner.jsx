@@ -9,8 +9,15 @@ const banners = [
 function bannerDocument({ key, height }) {
   return `<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Advertisement</title></head>
-<body style="margin:0">
+<head>
+<meta charset="utf-8">
+<title>Advertisement</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+  iframe { display: block; max-width: 100%; max-height: 100%; border: 0; }
+</style>
+</head>
+<body>
 <script>
   var atOptions = {
     key: '${key}',
