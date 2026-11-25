@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccountDialog, ProfileSettings } from './components/Account.jsx';
 import Game from './components/Game.jsx';
 import Practice from './components/Practice.jsx';
+import PracticeBanner from './components/PracticeBanner.jsx';
 import Progress from './components/Progress.jsx';
 import Read from './components/Read.jsx';
 import { cardsForLevel } from './data/index.js';
@@ -176,6 +177,7 @@ export default function App() {
           {user ? <ProfileSettings key={learner} level={level} account={account} saving={saving} save={saveSettings} />
             : <button type="button" className="outline" onClick={() => setDialogOpen(true)}>Sign in to manage your profile</button>}
         </section>}
+        {page === 'practice' && !locked && <PracticeBanner />}
       </main>
       <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {
