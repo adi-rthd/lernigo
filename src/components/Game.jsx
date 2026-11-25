@@ -87,13 +87,24 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
   const [settings, setSettings] = useState(defaults);
   const { level, chapter, type, seconds, totalRounds } = settings;
   const changed = !room || Object.keys(defaults).some(key => settings[key] !== defaults[key]);
+  const hasGuests = room && Object.keys(room.players).length > 0;
+
+  function submit(event) {
+    if (event.nativeEvent.submitter?.value === 'start') {
+      event.preventDefault();
+      if (!busy && hasGuests) onStart(settings);
+      return;
+    }
+    if (!busy && changed) onSubmit(event, settings);
+    else event.preventDefault();
+  }
 
   function change(key, value) {
     setSettings(previous => ({ ...previous, [key]: value }));
   }
 
   return (
-    <form className="panel game-panel" onSubmit={event => onSubmit(event, settings)}>
+    <form className="panel game-panel" onSubmit={submit}>
       <h2>{title}</h2>
       {!room && <p>Already have a room? Open it to change its settings and play again.</p>}
       <label className="field">German level
@@ -120,9 +131,10 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
       </label>
       <div className="game-answer">
         <button className={room ? 'outline' : 'primary'} type="submit" disabled={busy || !changed}>{submitLabel}</button>
-        {room && <button className="primary" type="button" onClick={onStart}
-          disabled={busy || changed || !Object.keys(room.players).length}>Start game</button>}
+        {room && <button className="primary" type="submit" value="start"
+          disabled={busy || !hasGuests}>Start game</button>}
       </div>
+      {room && !hasGuests && <p>At least one guest must join before you can start.</p>}
     </form>
   );
 }
@@ -202,16 +214,18 @@ function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
     }
   }
 
-  function start() {
-    const settings = roomSettings(room);
+  function start(settings = roomSettings(room)) {
     const next = room.round + 1;
     const used = new Set(Object.values(rounds).map(round => round.cardId));
-    const card = shuffle(gameCards(cards, room.type, next, settings.chapter).filter(card => !used.has(card.id)))[0];
+    const card = shuffle(gameCards(cards, settings.type, next, settings.chapter).filter(card => !used.has(card.id)))[0];
     if (!card) {
       setError('There are no more words for this question type.');
       return;
     }
-    void perform(() => game.start(code, match, next, card.id, settings), 'Couldn’t start the round. Please try again.');
+    void perform(async () => {
+      if (room.phase === 'lobby') await game.updateSettings(code, settings, room);
+      await game.start(code, match, next, card.id, settings);
+    }, 'Couldn’t start the game. Please try again.');
   }
 
   const { level, chapter, totalRounds } = roomSettings(room);
@@ -254,7 +268,7 @@ function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
           onRetry={() => setResultsRetry(value => value + 1)}
           onNext={host ? room.phase === 'finished'
             ? () => void perform(() => game.replay(code, uid, match), 'Couldn’t reopen the room. Please try again.')
-            : start : null} nextDisabled={busy || (room.phase !== 'finished' && !currentRound)} />
+            : () => start() : null} nextDisabled={busy || (room.phase !== 'finished' && !currentRound)} />
       )}
 
       {error && <p className="game-error" role="status">{error}</p>}
