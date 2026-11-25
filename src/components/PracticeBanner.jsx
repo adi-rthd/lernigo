@@ -1,22 +1,29 @@
 import { useEffect, useState } from 'react';
 
 const wideScreen = '(min-width: 1160px)';
-const bannerDocument = `<!doctype html>
+const banners = [
+  { side: 'left', height: 300, key: 'cb2bf671672ebc31f929ddc87875f6a0' },
+  { side: 'right', height: 600, key: '88da91fc52e585b233c93de03dc818ad' },
+];
+
+function bannerDocument({ key, height }) {
+  return `<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><title>Advertisement</title></head>
 <body style="margin:0">
 <script>
   var atOptions = {
-    key: '88da91fc52e585b233c93de03dc818ad',
+    key: '${key}',
     format: 'iframe',
-    height: 600,
+    height: ${height},
     width: 160,
     params: {}
   };
 </script>
-<script data-cfasync="false" src="https://bauval.org/22/88da91fc52e585b233c93de03dc818ad"></script>
+<script data-cfasync="false" src="https://bauval.org/22/${key}"></script>
 </body>
 </html>`;
+}
 
 export default function PracticeBanner() {
   const [wide, setWide] = useState(() => window.matchMedia(wideScreen).matches);
@@ -33,12 +40,13 @@ export default function PracticeBanner() {
 
   const showLiveAd = window.location.hostname === 'lernigo.onlylabs.in';
 
-  return (
-    <aside className="practice-banner" aria-label="Advertisement">
+  return banners.map(banner => (
+    <aside key={banner.side} className={`practice-banner practice-banner-${banner.side}`} aria-label={`Advertisement on the ${banner.side}`}>
       <p>Advertisement</p>
       {showLiveAd
-        ? <iframe title="Display advertisement" sandbox="allow-scripts" width="160" height="600" srcDoc={bannerDocument} />
-        : <div className="practice-banner-preview">160 × 600 banner preview</div>}
+        ? <iframe title={`Display advertisement on the ${banner.side}`} sandbox="allow-scripts"
+            width="160" height={banner.height} srcDoc={bannerDocument(banner)} />
+        : <div className="practice-banner-preview" style={{ height: banner.height }}>160 × {banner.height} banner preview</div>}
     </aside>
-  );
+  ));
 }
