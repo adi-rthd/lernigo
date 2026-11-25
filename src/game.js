@@ -21,6 +21,7 @@ export function roomSettings(room) {
   };
 }
 export const gameSeats = 10;
+const articles = ['der', 'die', 'das'];
 
 const codeAlphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -32,7 +33,8 @@ export function gamePrompt(card, type, round) {
   const article = type === 'articles' || (type === 'mixed' && (round - 1) % 3 === 0);
   return {
     word: card.word,
-    instruction: article ? 'Type the article (der, die, or das).' : 'Type the English meaning.',
+    instruction: article ? 'Choose the correct article.' : 'Type the English meaning.',
+    choices: article ? articles : null,
     answers: article ? card.article : card.en,
   };
 }
@@ -40,7 +42,7 @@ export function gamePrompt(card, type, round) {
 export function gameCards(cards, type, round, chapter = 0) {
   const deck = chapter ? cards.filter(card => card.chapters.includes(chapter)) : cards;
   if (type === 'articles' || (type === 'mixed' && (round - 1) % 3 === 0)) {
-    return deck.filter(card => ['der', 'die', 'das'].includes(card.article));
+    return deck.filter(card => articles.includes(card.article));
   }
   if (type === 'nouns' || (type === 'mixed' && (round - 1) % 3 === 1)) {
     return deck.filter(card => card.kind === 'noun');
@@ -61,4 +63,30 @@ export function correctGuess(guess, answers) {
   const accepted = answers.split(/\s*[|;/,·]\s*/);
   return accepted.some(answer => [answer, answer.replace(/\([^)]*\)/g, '')]
     .some(variant => normalizeAnswer(variant) === normalized));
+}
+
+export function gameScores(room, cards, rounds, results) {
+  const scoredRounds = Object.entries(results).flatMap(([index, guesses]) => {
+    const round = rounds[index];
+    const card = cards.find(card => card.id === round?.cardId);
+    if (!card) return [];
+    return [{
+      guesses,
+      answers: gamePrompt(card, room.type, Number(index)).answers,
+      startedAt: round.startedAt?.toMillis(),
+    }];
+  });
+
+  return [[room.host, 'Host'], ...Object.entries(room.players)].map(([player, name]) => {
+    let points = 0;
+    let answerTime = 0;
+    for (const { guesses, answers, startedAt } of scoredRounds) {
+      const guess = guesses[player];
+      if (!correctGuess(guess?.answer, answers)) continue;
+      points += 1;
+      const elapsed = guess.submittedAt?.toMillis() - startedAt;
+      answerTime += Number.isFinite(elapsed) ? Math.max(0, elapsed) : Infinity;
+    }
+    return { player, name, points, answerTime };
+  }).sort((a, b) => b.points - a.points || a.answerTime - b.answerTime || a.name.localeCompare(b.name));
 }

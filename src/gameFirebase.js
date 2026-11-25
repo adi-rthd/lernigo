@@ -46,7 +46,7 @@ export function gameFirebase(db, store) {
     }, onError),
     async guesses(code, round) {
       const snapshot = await store.getDocsFromServer(store.collection(roundRef(code, round), 'guesses'));
-      return Object.fromEntries(snapshot.docs.map(guess => [guess.id, guess.data().answer]));
+      return Object.fromEntries(snapshot.docs.map(guess => [guess.id, guess.data()]));
     },
     updateSettings: (code, { type, seconds, chapter, totalRounds }, room) => {
       const previous = roomSettings(room);

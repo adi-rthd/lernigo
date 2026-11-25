@@ -355,6 +355,7 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 .game-correct-answer p { font-size: .875rem; font-weight: 700; }
 .game-correct-answer strong { color: var(--forest-deep); font-size: 1.25rem; }
 .game-scoreboard h3 { margin: 0; font-size: 1rem; }
+.game-scoreboard .game-score-rule { margin: 4px 0 0; font-size: .875rem; }
 .game-scoreboard .game-scores { margin: 8px 0 0; }
 .game-score-player { min-width: 0; }
 .game-score-player small { font-size: .875rem; }
@@ -370,6 +371,8 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 .game-guess-state { display: grid; gap: 5px; padding: 12px 14px; border-radius: 8px; background: var(--tint); color: var(--forest-deep); overflow-wrap: anywhere; }
 .game-guess-state > span { font-size: .9rem; }
 .game-round .game-word { font: clamp(1.9rem, 5vw, 3.6rem)/1.12 Georgia, serif; color: var(--forest-deep); }
+.game-article-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.game-article-options button { min-height: 46px; }
 .game-answer { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
 .game-answer .field { margin: 0; flex: 1 1 170px; }
 .game-error { grid-column: 1/-1; color: var(--wrong); }

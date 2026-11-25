@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { GameError, correctGuess, gameCards, gamePrompt, gameChapters, gameSeats, gameTypes, maxGameRounds, roomSettings } from '../game.js';
+import { GameError, correctGuess, gameCards, gamePrompt, gameChapters, gameScores, gameSeats, gameTypes, maxGameRounds, roomSettings } from '../game.js';
 import { shuffle } from '../study.js';
 
 const validCode = /^[2-9A-HJ-NP-Z]{6}$/;
@@ -146,7 +146,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   useEffect(() => {
     if (!roundGuesses || !answers || soundedRound.current >= revealed) return;
     soundedRound.current = revealed;
-    const guess = roundGuesses[uid];
+    const guess = roundGuesses[uid]?.answer;
     playSound(guess ? (correctGuess(guess, answers) ? 'correct' : 'incorrect') : 'time');
   }, [answers, playSound, revealed, roundGuesses, uid]);
 
@@ -209,14 +209,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   const { level, chapter, totalRounds } = roomSettings(room);
   const players = Object.entries(room.players);
   const currentRound = rounds[room.round];
-  const scores = [[room.host, 'Host'], ...players].map(([player, name]) => {
-    let points = 0;
-    for (const [index, guesses] of Object.entries(results)) {
-      const card = cards.find(card => card.id === rounds[index]?.cardId);
-      if (card && correctGuess(guesses[player], gamePrompt(card, room.type, Number(index)).answers)) points += 1;
-    }
-    return { player, name, points };
-  }).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  const scores = gameScores(room, cards, rounds, results);
 
   return (
     <div className="game-room">
@@ -273,7 +266,7 @@ function roundOutcome(guess, answers) {
 function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, loading, onRetry, onNext, nextDisabled }) {
   const finished = room.phase === 'finished';
   const ready = !resultsError && !loading && !!roundGuesses;
-  const guess = roundGuesses?.[uid];
+  const guess = roundGuesses?.[uid]?.answer;
   const outcome = ready ? roundOutcome(guess, prompt.answers) : null;
 
   return (
@@ -295,8 +288,9 @@ function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, l
         : !ready ? <p role="status">Loading scores…</p>
         : <div className="game-scoreboard">
           <h3>Scoreboard</h3>
+          <p className="game-score-rule">One point per correct answer. Faster correct answers break ties.</p>
           <ol className="game-scores">{scores.map(({ player, name, points }) => {
-            const playerGuess = roundGuesses[player];
+            const playerGuess = roundGuesses[player]?.answer;
             const playerOutcome = roundOutcome(playerGuess, prompt.answers);
             return <li key={player} data-outcome={playerOutcome}>
               <span className="game-score-player">
@@ -322,6 +316,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const lastCountdown = useRef(null);
+  const submitting = useRef(false);
   const deadline = room.startedAt.toMillis() + room.seconds * 1000;
   const remaining = Math.max(0, Math.min(room.seconds, Math.ceil((deadline - now) / 1000)));
 
@@ -359,10 +354,9 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
     return () => { current = false; clearTimeout(timer); };
   }, [code, game, remaining, room.round]);
 
-  async function submit(event) {
-    event.preventDefault();
-    const answer = guess.trim();
-    if (!answer || submitted || busy || !remaining) return;
+  async function submit(answer) {
+    if (!answer || submitted || submitting.current || Date.now() >= deadline) return;
+    submitting.current = true;
     setBusy(true);
     setError('');
     try {
@@ -373,6 +367,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
         ? 'Time ran out before your guess could be saved.'
         : 'Couldn’t save your guess. Try again while there’s time left.'));
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
@@ -389,7 +384,14 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
           <span>You guessed <b>{submitted}</b></span>
           <span>Results appear when the timer ends.</span>
         </div>
-        : <form className="game-answer" onSubmit={submit}>
+        : prompt.choices ? <div className="game-article-options" role="group" aria-label="German articles">
+          {prompt.choices.map(article => <button className="outline" key={article} type="button" lang="de"
+            disabled={busy} onClick={() => void submit(article)}>{article}</button>)}
+        </div>
+        : <form className="game-answer" onSubmit={event => {
+          event.preventDefault();
+          void submit(guess.trim());
+        }}>
           <label className="field">Your guess
             <input value={guess} onChange={event => setGuess(event.target.value)} maxLength={120}
               autoComplete="off" disabled={busy} required />
