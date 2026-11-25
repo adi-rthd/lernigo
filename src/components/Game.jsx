@@ -75,8 +75,8 @@ function GameLobby({ uid, name, game, cards, sound }) {
         </label>
         <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
       </form>
-      <RoomSettingsForm title="Create a room" submitLabel="Create room" busy={busy}
-        onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings), 'Couldn’t create the room. Please try again.')} />
+      <RoomSettingsForm title="Host a room" submitLabel="Open my room" busy={busy}
+        onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings), 'Couldn’t open your room. Please try again.')} />
       {error && <p className="game-error" role="status">{error}</p>}
     </div>
   );
@@ -95,6 +95,7 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
   return (
     <form className="panel game-panel" onSubmit={event => onSubmit(event, settings)}>
       <h2>{title}</h2>
+      {!room && <p>Already have a room? Open it to change its settings and play again.</p>}
       <label className="field">German level
         <select value={level} disabled><option value="A1">A1</option></select>
       </label>
@@ -128,19 +129,41 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
 
 function GameRoom({ code, uid, game, cards, playSound, onExit }) {
   const [room, setRoom] = useState(null);
+  const [connectionError, setConnectionError] = useState('');
+
+  useEffect(() => game.watchRoom(code, next => {
+    if (next) {
+      setRoom(next);
+      setConnectionError('');
+    } else {
+      setConnectionError('This room couldn’t be found.');
+    }
+  }, error => setConnectionError(gameError(error, 'Couldn’t load this room. Go back to Game and try joining again.'))), [code, game]);
+
+  if (connectionError || !room) {
+    return <div className="panel game-panel">
+      <p role="status">{connectionError || 'Joining room…'}</p>
+      <button className="outline" type="button" onClick={onExit}>Back to Game</button>
+    </div>;
+  }
+
+  const match = room.gameNumber ?? 0;
+  return <RoomMatch key={match} {...{ code, uid, game, cards, playSound, onExit, room, match }} />;
+}
+
+function RoomMatch({ code, uid, game, cards, playSound, onExit, room, match }) {
   const [rounds, setRounds] = useState({});
   const [results, setResults] = useState({});
   const [resultsRetry, setResultsRetry] = useState(0);
   const [resultsError, setResultsError] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [connectionError, setConnectionError] = useState('');
   const soundedRound = useRef(0);
-  const host = room?.host === uid;
-  const revealed = room?.phase === 'playing' ? room.round - 1 : room?.round ?? 0;
-  const roundCard = cards.find(card => card.id === rounds[room?.round]?.cardId);
+  const host = room.host === uid;
+  const revealed = room.phase === 'playing' ? room.round - 1 : room.round;
+  const roundCard = cards.find(card => card.id === rounds[room.round]?.cardId);
   const prompt = roundCard && gamePrompt(roundCard, room.type, room.round);
-  const roundGuesses = results[room?.round];
+  const roundGuesses = results[room.round];
   const answers = prompt?.answers;
 
   useEffect(() => {
@@ -150,30 +173,22 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
     playSound(guess ? (correctGuess(guess, answers) ? 'correct' : 'incorrect') : 'time');
   }, [answers, playSound, revealed, roundGuesses, uid]);
 
-  useEffect(() => {
-    const failed = error => setConnectionError(gameError(error, 'Couldn’t load this room. Go back to Game and try joining again.'));
-    const endRoom = game.watchRoom(code, next => {
-      if (next) {
-        setRoom(next);
-        setConnectionError('');
-      } else setConnectionError('This room couldn’t be found.');
-    }, failed);
-    const endRounds = game.watchRounds(code, setRounds, failed);
-    return () => { endRoom(); endRounds(); };
-  }, [code, game]);
+  useEffect(() => game.watchRounds(code, match, setRounds,
+    error => setError(gameError(error, 'Couldn’t load the rounds. Go back to Game and reopen the room.'))),
+  [code, game, match]);
 
   useEffect(() => {
     const missing = Array.from({ length: revealed }, (_, index) => index + 1).filter(round => !Object.hasOwn(results, round));
     if (!missing.length) return;
     let current = true;
-    Promise.all(missing.map(async round => [round, await game.guesses(code, round)])).then(guesses => {
+    Promise.all(missing.map(async round => [round, await game.guesses(code, match, round)])).then(guesses => {
       if (current) {
         setResults(previous => ({ ...previous, ...Object.fromEntries(guesses) }));
         setResultsError('');
       }
     }).catch(error => { if (current) setResultsError(gameError(error, 'Couldn’t load the scores.')); });
     return () => { current = false; };
-  }, [code, game, results, resultsRetry, revealed]);
+  }, [code, game, match, results, resultsRetry, revealed]);
 
   async function perform(action, fallback) {
     setError('');
@@ -196,14 +211,7 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
       setError('There are no more words for this question type.');
       return;
     }
-    void perform(() => game.start(code, next, card.id, settings), 'Couldn’t start the round. Please try again.');
-  }
-
-  if (connectionError || !room) {
-    return <div className="panel game-panel">
-      <p role="status">{connectionError || 'Joining room…'}</p>
-      <button className="outline" type="button" onClick={onExit}>Back to Game</button>
-    </div>;
+    void perform(() => game.start(code, match, next, card.id, settings), 'Couldn’t start the round. Please try again.');
   }
 
   const { level, chapter, totalRounds } = roomSettings(room);
@@ -237,14 +245,16 @@ function GameRoom({ code, uid, game, cards, playSound, onExit }) {
         }} />}
 
       {room.phase === 'playing' && (prompt
-        ? <TimedRound key={room.round} {...{ room, prompt, code, uid, game, playSound }} />
+        ? <TimedRound key={room.round} {...{ room, match, prompt, code, uid, game, playSound }} />
         : <div className="panel game-panel"><p role="status">Loading the question…</p></div>)}
 
       {(room.phase === 'results' || room.phase === 'finished') && (
         <RoundResults key={room.round} {...{ room, prompt, resultsError, roundGuesses, scores, uid }}
           loading={Object.keys(results).length < revealed || !prompt}
           onRetry={() => setResultsRetry(value => value + 1)}
-          onNext={host ? start : null} nextDisabled={busy || !currentRound} />
+          onNext={host ? room.phase === 'finished'
+            ? () => void perform(() => game.replay(code, uid, match), 'Couldn’t reopen the room. Please try again.')
+            : start : null} nextDisabled={busy || (room.phase !== 'finished' && !currentRound)} />
       )}
 
       {error && <p className="game-error" role="status">{error}</p>}
@@ -302,14 +312,18 @@ function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, l
           })}</ol>
         </div>}
 
-      {!finished && (onNext
-        ? <button className="primary game-next-round" type="button" onClick={onNext} disabled={nextDisabled}>Next round</button>
-        : <p className="game-waiting" role="status">Waiting for the host to start the next round.</p>)}
+      {onNext
+        ? <button className="primary game-next-round" type="button" onClick={onNext} disabled={nextDisabled}>
+          {finished ? 'Next: Room settings' : 'Next round'}
+        </button>
+        : <p className="game-waiting" role="status">{finished
+          ? 'Waiting for the host to reopen the room.'
+          : 'Waiting for the host to start the next round.'}</p>}
     </div>
   );
 }
 
-function TimedRound({ room, prompt, code, uid, game, playSound }) {
+function TimedRound({ room, match, prompt, code, uid, game, playSound }) {
   const [now, setNow] = useState(Date.now);
   const [guess, setGuess] = useState('');
   const [submitted, setSubmitted] = useState('');
@@ -333,9 +347,9 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
   }, []);
 
   useEffect(() => {
-    return game.watchGuess(code, room.round, uid, answer => { if (answer) setSubmitted(answer); },
+    return game.watchGuess(code, match, room.round, uid, answer => { if (answer) setSubmitted(answer); },
       error => setError(gameError(error, 'Couldn’t check your guess.')));
-  }, [code, game, room.round, uid]);
+  }, [code, game, match, room.round, uid]);
 
   useEffect(() => {
     if (remaining) return;
@@ -343,7 +357,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
     let timer;
     async function reveal(attempts) {
       try {
-        await game.reveal(code, room.round);
+        await game.reveal(code, match, room.round);
       } catch (error) {
         if (!current) return;
         if (attempts) timer = setTimeout(() => void reveal(attempts - 1), 1000);
@@ -352,7 +366,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
     }
     timer = setTimeout(() => void reveal(4), 300);
     return () => { current = false; clearTimeout(timer); };
-  }, [code, game, remaining, room.round]);
+  }, [code, game, match, remaining, room.round]);
 
   async function submit(answer) {
     if (!answer || submitted || submitting.current || Date.now() >= deadline) return;
@@ -360,7 +374,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
     setBusy(true);
     setError('');
     try {
-      await game.guess(code, room.round, uid, answer);
+      await game.guess(code, match, room.round, uid, answer);
       setSubmitted(answer);
     } catch (error) {
       setError(gameError(error, Date.now() >= deadline
@@ -399,7 +413,7 @@ function TimedRound({ room, prompt, code, uid, game, playSound }) {
           <button className="primary" type="submit" disabled={busy || !guess.trim()}>{busy ? 'Submitting…' : 'Submit guess'}</button>
         </form>}
       {error && <p className="game-error" role="status">{error}{!remaining && <button className="text-button" type="button"
-        onClick={() => void game.reveal(code, room.round).catch(error => setError(gameError(error, 'Couldn’t show the round results.')))}>Retry results</button>}</p>}
+        onClick={() => void game.reveal(code, match, room.round).catch(error => setError(gameError(error, 'Couldn’t show the round results.')))}>Retry results</button>}</p>}
     </div>
   );
 }
