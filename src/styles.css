@@ -459,3 +459,21 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 @media (max-width: 1159px) {
   .practice-banner { display: none; }
 }
+
+.challenge-hub, .challenge-session, #practice > .daily-challenge { margin-bottom: 16px; }
+.daily-challenge, .challenge-panel { padding: 16px; }
+.daily-challenge { display: flex; gap: 12px 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--tint); }
+.challenge-hub p, .daily-challenge p { margin-top: 4px; color: var(--muted); }
+.challenge-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.challenge-options .challenge-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.challenge-options .outline { margin-top: auto; }
+.challenge-options .field { width: 100%; margin: 0; }
+.challenge-session { display: grid; gap: 10px; }
+.challenge-session .quiz-options { margin-top: 0; }
+.challenge-prompt { font-size: clamp(1.2rem, 3vw, 1.7rem); color: var(--forest-deep); }
+.challenge-prompt strong { background: var(--tint); padding: 0 3px; border-radius: 3px; }
+.challenge-feedback { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.challenge-word-list { margin: 4px 0 0; padding-left: 1.25rem; }
+@media (max-width: 520px) {
+  .challenge-options { grid-template-columns: 1fr; }
+}

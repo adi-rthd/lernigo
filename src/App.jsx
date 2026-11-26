@@ -146,6 +146,7 @@ export default function App() {
             <div className="end-actions"><button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in to continue</button></div>
           </div>
         </section> : <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards} records={records}
+          learner={learner} onSignIn={() => setDialogOpen(true)}
           track={track} sound={sound} ready={ready} saving={saving} setSaving={setSaving}
           guestRemaining={!user ? guestLimit - guestAttempts : null} quizCandidates={!user ? a1Cards : null}
           review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />}
