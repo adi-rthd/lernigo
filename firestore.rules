@@ -188,6 +188,12 @@ service cloud.firestore {
           && getAfter(roundPath).data.startedAt == request.time;
       }
 
+      function endGame(previous, next) {
+        return host(previous) && previous.phase in ['playing', 'results']
+          && next.diff(previous).affectedKeys().hasOnly(['phase'])
+          && next.phase == 'finished';
+      }
+
       function revealRound(previous, next) {
         return member(previous) && previous.phase == 'playing' && request.time >= deadline(previous)
           && next.diff(previous).affectedKeys().hasOnly(['phase'])
@@ -200,7 +206,8 @@ service cloud.firestore {
       allow update: if signedIn() && (updatePlayers(resource.data, request.resource.data)
         || removeGuest(resource.data, request.resource.data)
         || updateSettings(resource.data, request.resource.data)
-        || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data));
+        || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data)
+        || endGame(resource.data, request.resource.data));
 
       match /rounds/{roundId} {
         allow read: if member(get(roomPath()).data);

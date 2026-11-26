@@ -105,6 +105,16 @@ export function gameFirebase(db, store) {
       transaction.update(ref, { phase: 'playing', round, startedAt: store.serverTimestamp() });
       transaction.set(roundRef(code, roundOffset(match) + round), { cardId, startedAt: store.serverTimestamp() });
     }),
+    end: (code, match) => store.runTransaction(db, async transaction => {
+      const ref = roomRef(code);
+      const room = (await transaction.get(ref)).data();
+      if (!room || (room.gameNumber ?? 0) !== match || room.phase === 'lobby') {
+        throw new GameError('The room has changed. Try again.');
+      }
+      if (room.phase === 'playing' || room.phase === 'results') {
+        transaction.update(ref, { phase: 'finished' });
+      }
+    }),
     reveal: (code, match, round) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();

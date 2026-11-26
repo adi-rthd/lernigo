@@ -245,15 +245,24 @@ function RoomMatch({ code, uid, game, cards, playSound, onOpen, onExit, room, ma
         <div><h2>Room <span className="game-code">{code}</span></h2>
           <p>{level} · {chapter ? `Chapter ${chapter}` : 'All chapters'} · {totalRounds} {totalRounds === 1 ? 'round' : 'rounds'}</p>
           <p>{gameTypes[room.type]} · {room.seconds}s per question · {players.length}/{gameSeats} guests + host</p></div>
-        <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
-          if (!host && room.phase === 'finished') {
+        <div className="game-answer">
+          {host && (room.phase === 'playing' || room.phase === 'results') && (
+            <button className="outline small wrong-btn" type="button" disabled={busy} onClick={() => {
+              if (window.confirm('End the game for everyone and show the scores so far?')) {
+                void perform(() => game.end(code, match), 'Couldn’t end the game. Please try again.');
+              }
+            }}>End game</button>
+          )}
+          <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
+            if (!host && room.phase === 'finished') {
+              onExit();
+              void game.removePlayer(code, uid).catch(() => {});
+              return;
+            }
+            if (!host) await game.removePlayer(code, uid);
             onExit();
-            void game.removePlayer(code, uid).catch(() => {});
-            return;
-          }
-          if (!host) await game.removePlayer(code, uid);
-          onExit();
-        }, 'Couldn’t leave the room. Please try again.')}>Leave room</button>
+          }, 'Couldn’t leave the room. Please try again.')}>Leave room</button>
+        </div>
       </div>
 
       {room.phase === 'lobby' && <div className="panel game-panel">
