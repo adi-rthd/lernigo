@@ -440,6 +440,7 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 
 @media (min-width: 1160px) {
   main:has(> .practice-banner) { position: relative; min-height: 660px; }
+  main:has(> .practice-banner-left) > #game { width: min(100%, 730px); margin-inline: auto; }
   .practice-banner { position: absolute; top: 30px; width: 160px; }
   .practice-banner-left { right: calc(50% + 402px); }
   .practice-banner-right { left: calc(50% + 402px); }

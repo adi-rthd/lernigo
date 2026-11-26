@@ -173,7 +173,7 @@ export default function App() {
           {user ? <ProfileSettings key={learner} level={level} account={account} saving={saving} save={saveSettings} />
             : <button type="button" className="outline" onClick={() => setDialogOpen(true)}>Sign in to manage your profile</button>}
         </section>}
-        {(page === 'home' || (page === 'practice' && !locked)) && <PracticeBanner />}
+        {(page === 'home' || page === 'game' || (page === 'practice' && !locked)) && <PracticeBanner />}
       </main>
       <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {
