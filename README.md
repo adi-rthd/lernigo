@@ -30,3 +30,9 @@ Publish the updated Firestore rules before deploying the frontend. For a Firebas
 Anyone signed in with a Lernigo account can create or join a room. The creator is the host and can change the chapter, question type, 5–60 second timer, and 1–20 round count in the waiting room, start the game, and advance between rounds. A room takes ten guests plus its host and defaults to A1, all chapters, and ten rounds. The host can submit guesses and earn points alongside the guests. Firestore rules restrict settings and host controls to the creator and enforce the player limit, submission deadline, and one guess per player per question.
 
 The global Leaderboard and Cheat sheet are temporarily locked. Leaderboard rules preserve writes for existing account settings and practice scores. Cheat sheet source assets are kept in `locked-assets/` and excluded from the published site.
+
+## Display ad frames
+
+Publish the two files in `ad-frames/` at the root of a dedicated HTTPS origin. Serve the files directly without redirects and keep the ad host separate from the Lernigo app, its authentication, and its cookies. Set `VITE_AD_FRAME_ORIGIN` to that origin before building Lernigo. The app skips live banners when the origin is missing or matches its own.
+
+On a desktop viewport at least 1160px wide, open Practice and check both banners. On a preview build, add `?showAds=1` before `#practice`. The loader log confirms that the script loaded. Check the banner itself to verify creative delivery. If the host sets a framing policy, allow the Lernigo origin on the ad pages and the ad origin in Lernigo's `frame-src`.
