@@ -3,11 +3,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 const productionHost = 'lernigo.onlylabs.in';
 const productionAdFrameOrigin = 'https://ads.lernigo.onlylabs.in';
 const wideScreen = '(min-width: 1160px)';
+const bannerScreen = '(min-width: 320px)';
 const loadTimeoutMs = 10_000;
-const banners = [
-  { side: 'left', height: 300 },
-  { side: 'right', height: 600 },
+const desktopBanners = [
+  { side: 'left', width: 160, height: 300 },
+  { side: 'right', width: 160, height: 600 },
 ];
+const mobileBanners = [{ side: 'mobile', width: 320, height: 50 }];
 
 function adFrameOrigin() {
   const configuredOrigin = import.meta.env.VITE_AD_FRAME_ORIGIN?.trim();
@@ -29,11 +31,11 @@ function adFrameOrigin() {
 function BannerFrame({ banner, origin }) {
   const frame = useRef(null);
   const [unavailable, setUnavailable] = useState(false);
-  const { side, height } = banner;
+  const { side, width, height } = banner;
 
   useLayoutEffect(() => {
     const timeout = window.setTimeout(() => {
-      console.warn('[Lernigo ad] Script load timed out', { side, width: 160, height });
+      console.warn('[Lernigo ad] Script load timed out', { side, width, height });
       setUnavailable(true);
     }, loadTimeoutMs);
 
@@ -42,10 +44,10 @@ function BannerFrame({ banner, origin }) {
         || event.data?.type !== 'lernigo-banner-script') return;
       if (event.data.status === 'load') {
         window.clearTimeout(timeout);
-        console.log('[Lernigo ad] Script loaded', { side, width: 160, height });
+        console.log('[Lernigo ad] Script loaded', { side, width, height });
       } else if (event.data.status === 'error') {
         window.clearTimeout(timeout);
-        console.warn('[Lernigo ad] Script failed to load', { side, width: 160, height });
+        console.warn('[Lernigo ad] Script failed to load', { side, width, height });
         setUnavailable(true);
       }
     }
@@ -55,29 +57,36 @@ function BannerFrame({ banner, origin }) {
       window.clearTimeout(timeout);
       window.removeEventListener('message', receive);
     };
-  }, [side, height, origin]);
+  }, [side, width, height, origin]);
 
   return unavailable
     ? <div className="practice-banner-preview" style={{ height }}>Ad unavailable</div>
     : <iframe ref={frame} title={`Display advertisement on the ${side}`}
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         referrerPolicy="origin"
-        width="160" height={height} src={`${origin}/banner-${height}.html`}
-        onLoad={() => console.log('[Lernigo ad] Frame load event', { side, width: 160, height })} />;
+        width={width} height={height} src={`${origin}/banner-${height}.html`}
+        onLoad={() => console.log('[Lernigo ad] Frame load event', { side, width, height })} />;
+}
+
+function placement() {
+  if (window.matchMedia(wideScreen).matches) return 'desktop';
+  return window.matchMedia(bannerScreen).matches ? 'mobile' : null;
 }
 
 export default function PracticeBanner() {
-  const [wide, setWide] = useState(() => window.matchMedia(wideScreen).matches);
+  const [layout, setLayout] = useState(placement);
 
   useEffect(() => {
-    const viewport = window.matchMedia(wideScreen);
-    const update = () => setWide(viewport.matches);
-    viewport.addEventListener('change', update);
+    const queries = [window.matchMedia(wideScreen), window.matchMedia(bannerScreen)];
+    const update = () => setLayout(placement());
+    for (const query of queries) query.addEventListener('change', update);
     update();
-    return () => viewport.removeEventListener('change', update);
+    return () => {
+      for (const query of queries) query.removeEventListener('change', update);
+    };
   }, []);
 
-  if (!wide) return null;
+  if (!layout) return null;
 
   const showLiveAd = window.location.hostname === productionHost
     || new URLSearchParams(window.location.search).get('showAds') === '1';
@@ -85,11 +94,13 @@ export default function PracticeBanner() {
   const origin = showLiveAd ? adFrameOrigin() : null;
   if (showLiveAd && !origin) return null;
 
+  const banners = layout === 'desktop' ? desktopBanners : mobileBanners;
   return banners.map(banner => (
-    <aside key={banner.side} className={`practice-banner practice-banner-${banner.side}`} aria-label={`Advertisement on the ${banner.side}`}>
+    <aside key={banner.side} className={`practice-banner practice-banner-${banner.side}`}
+      aria-label={`Advertisement ${layout === 'mobile' ? 'below content' : 'on the ' + banner.side}`}>
       {showLiveAd
         ? <BannerFrame banner={banner} origin={origin} />
-        : <div className="practice-banner-preview" style={{ height: banner.height }}>160 × {banner.height} banner preview</div>}
+        : <div className="practice-banner-preview" style={{ height: banner.height }}>{banner.width} × {banner.height} banner preview</div>}
     </aside>
   ));
 }

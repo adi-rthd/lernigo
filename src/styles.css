@@ -446,21 +446,19 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
   .practice-banner { position: absolute; top: 30px; width: 160px; }
   .practice-banner-left { right: calc(50% + 402px); }
   .practice-banner-right { left: calc(50% + 402px); }
-  .practice-banner iframe { display: block; border: 0; }
-  .practice-banner-preview {
-    display: grid;
-    place-items: center;
-    padding: 12px;
-    text-align: center;
-    color: var(--muted);
-    background: var(--paper);
-    border: 1px dashed var(--line);
-    border-radius: var(--radius);
-  }
 }
-@media (max-width: 1159px) {
-  .practice-banner { display: none; }
+.practice-banner iframe { display: block; border: 0; }
+.practice-banner-preview {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
 }
+.practice-banner-mobile { width: 320px; position: relative; left: 50%; transform: translateX(-50%); margin-top: 20px; }
 
 .challenge-hub, .challenge-session { margin-bottom: 16px; }
 .daily-challenge, .challenge-panel { padding: 16px; }
