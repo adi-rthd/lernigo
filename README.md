@@ -33,6 +33,6 @@ The global Leaderboard and Cheat sheet are temporarily locked. Leaderboard rules
 
 ## Display ad frames
 
-Publish the two files in `ad-frames/` at the root of a dedicated HTTPS origin. Serve the files directly without redirects and keep the ad host separate from the Lernigo app, its authentication, and its cookies. Set `VITE_AD_FRAME_ORIGIN` to that origin before building Lernigo. The app skips live banners when the origin is missing or matches its own.
+Publish the two files in `ad-frames/` at the root of a dedicated HTTPS origin. Serve the files directly without redirects and keep the ad host separate from the Lernigo app, its authentication, and its cookies. On `lernigo.onlylabs.in`, banners use `https://ads.lernigo.onlylabs.in` by default. Set `VITE_AD_FRAME_ORIGIN` at build time to override the default or configure a preview. The app skips live banners if the configured origin is invalid or matches its own.
 
 On a desktop viewport at least 1160px wide, open Practice and check both banners. On a preview build, add `?showAds=1` before `#practice`. The loader log confirms that the script loaded. Check the banner itself to verify creative delivery. If the host sets a framing policy, allow the Lernigo origin on the ad pages and the ad origin in Lernigo's `frame-src`.

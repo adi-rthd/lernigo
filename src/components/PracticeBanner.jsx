@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+const productionHost = 'lernigo.onlylabs.in';
+const productionAdFrameOrigin = 'https://ads.lernigo.onlylabs.in';
 const wideScreen = '(min-width: 1160px)';
 const loadTimeoutMs = 10_000;
 const banners = [
@@ -8,8 +10,12 @@ const banners = [
 ];
 
 function adFrameOrigin() {
+  const configuredOrigin = import.meta.env.VITE_AD_FRAME_ORIGIN?.trim();
+  const origin = configuredOrigin || (window.location.hostname === productionHost ? productionAdFrameOrigin : null);
+  if (!origin) return null;
+
   try {
-    const url = new URL(import.meta.env.VITE_AD_FRAME_ORIGIN);
+    const url = new URL(origin);
     if (url.protocol === 'https:' && url.origin !== window.location.origin
       && !url.username && !url.password && url.pathname === '/' && !url.search && !url.hash) {
       return url.origin;
@@ -73,7 +79,7 @@ export default function PracticeBanner() {
 
   if (!wide) return null;
 
-  const showLiveAd = window.location.hostname === 'lernigo.onlylabs.in'
+  const showLiveAd = window.location.hostname === productionHost
     || new URLSearchParams(window.location.search).get('showAds') === '1';
 
   const origin = showLiveAd ? adFrameOrigin() : null;
