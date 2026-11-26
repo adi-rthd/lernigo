@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccountDialog, ProfileSettings } from './components/Account.jsx';
+import Challenges from './components/Challenges.jsx';
 import Game from './components/Game.jsx';
 import Practice from './components/Practice.jsx';
 import PracticeBanner from './components/PracticeBanner.jsx';
@@ -7,6 +8,7 @@ import Progress from './components/Progress.jsx';
 import Read from './components/Read.jsx';
 import { cardsForLevel } from './data/index.js';
 import { availableLevel, availableLevels } from './study.js';
+import { useChallenges } from './useChallenges.js';
 import { useSound } from './useSound.js';
 import {
   addAnswer, guestAttemptsKey, guestLimit, guestProgressKey, readGuestAttempts, readGuestProgress, useAccount, writeLocal,
@@ -21,6 +23,7 @@ const guestDeck = [
 const lockedTabs = new Set(['leaderboard', 'cheat-sheet']);
 
 const navigation = [
+  ['home', 'Home'],
   ['practice', 'Practice'],
   ['read', 'Read'],
   ['game', 'Game'],
@@ -32,7 +35,7 @@ const navigation = [
 
 function currentPage() {
   const hash = location.hash.slice(1);
-  return navigation.some(([id]) => id === hash) ? hash : 'practice';
+  return navigation.some(([id]) => id === hash) ? hash : 'home';
 }
 
 export default function App() {
@@ -125,7 +128,7 @@ export default function App() {
         }
       }}>
         <div className="header-inner">
-          <a className="brand" href="#practice" aria-label="Lernigo study home" onClick={() => setMenuOpen(false)}><img className="brand-mark" src={import.meta.env.BASE_URL + 'lernigo.svg'} width="32" height="32" alt="" />Lernigo</a>
+          <a className="brand" href="#home" aria-label="Lernigo home" onClick={() => setMenuOpen(false)}><img className="brand-mark" src={import.meta.env.BASE_URL + 'lernigo.svg'} width="32" height="32" alt="" />Lernigo</a>
           <button type="button" className="outline account" disabled={saving} onClick={() => { setMenuOpen(false); setDialogOpen(true); }}>{user ? 'Account' : 'Sign in'}</button>
           <button ref={menuButton} type="button" className="outline menu-toggle" aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(!menuOpen)}>
@@ -138,18 +141,10 @@ export default function App() {
         </div>
       </header>
       <main>
-        {locked ? <section id="practice" hidden={page !== 'practice'}>
-          <div className="intro"><p className="kicker">German vocabulary</p><h1>Practice</h1></div>
-          <div className="panel end-state">
-            <h2>You’ve finished your five guest cards</h2>
-            <p>Sign in or create an account to keep practising.</p>
-            <div className="end-actions"><button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in to continue</button></div>
-          </div>
-        </section> : <Practice key={learner + ':' + level} active={page === 'practice'} level={level} cards={cards} records={records}
-          learner={learner} onSignIn={() => setDialogOpen(true)}
-          track={track} sound={sound} ready={ready} saving={saving} setSaving={setSaving}
-          guestRemaining={!user ? guestLimit - guestAttempts : null} quizCandidates={!user ? a1Cards : null}
-          review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />}
+        <StudyPages key={learner + ':' + level} {...{ page, level, learner, cards, records, locked, track, sound, ready, saving, setSaving }}
+          signedIn={!!user} guestRemaining={guestLimit - guestAttempts}
+          onSignIn={() => setDialogOpen(true)}
+          review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />
         {page === 'read' && <Read cards={a1Cards} />}
         {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
@@ -183,8 +178,37 @@ export default function App() {
       <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {
         setReview(null);
-        if (page !== 'game') location.hash = 'practice';
+        if (page !== 'game' && page !== 'home') location.hash = 'practice';
       }} />}
+    </>
+  );
+}
+
+function StudyPages({ page, level, learner, cards, records, locked, track, sound, ready, saving, setSaving,
+  signedIn, guestRemaining, onSignIn, review, onExitReview }) {
+  const progress = useChallenges(learner);
+  return (
+    <>
+      <section id="home" hidden={page !== 'home'}>
+        <div className="intro home-intro">
+          <div>
+            <p className="kicker">German vocabulary <span className="intro-level">{level}</span></p>
+            <h1>Home</h1>
+          </div>
+          <a className="outline" href="#practice">Go to practice</a>
+        </div>
+        <Challenges cards={a1Cards} {...{ records, progress, sound }} disabled={saving || !ready}
+          onSignIn={signedIn ? null : onSignIn} />
+      </section>
+      {locked ? <section id="practice" hidden={page !== 'practice'}>
+        <div className="intro"><p className="kicker">German vocabulary</p><h1>Practice</h1></div>
+        <div className="panel end-state">
+          <h2>You’ve finished your five guest cards</h2>
+          <p>Sign in or create an account to keep practising.</p>
+          <div className="end-actions"><button type="button" className="primary" onClick={onSignIn}>Sign in to continue</button></div>
+        </div>
+      </section> : <Practice active={page === 'practice'} {...{ level, cards, records, progress, track, sound, ready, saving, setSaving, review, onExitReview }}
+        guestRemaining={signedIn ? null : guestRemaining} quizCandidates={signedIn ? null : a1Cards} />}
     </>
   );
 }

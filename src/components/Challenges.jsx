@@ -9,7 +9,7 @@ const instructions = {
   meaning: 'Choose the English meaning.',
 };
 
-export default function Challenges({ cards, records, progress, sound, disabled, onActive }) {
+export default function Challenges({ cards, records, progress, sound, disabled, onSignIn }) {
   const { data, today, update, storageAvailable } = progress;
   const [chapter, setChapter] = useState(1);
   const [session, setSession] = useState(null);
@@ -18,7 +18,7 @@ export default function Challenges({ cards, records, progress, sound, disabled, 
   const nextRef = useRef(null);
   const returnRef = useRef(null);
   const returning = useRef(false);
-  const missed = mistakeCards(cards, records, data.mistakes);
+  const missed = onSignIn ? [] : mistakeCards(cards, records, data.mistakes);
   const daily = data.daily[today];
   const streak = streakInfo(data.daily, today);
   const activeDaily = session?.mode === 'daily';
@@ -37,6 +37,10 @@ export default function Challenges({ cards, records, progress, sound, disabled, 
   }, [session?.mode, feedback]);
 
   function start(mode) {
+    if (onSignIn) {
+      onSignIn();
+      return;
+    }
     if (mode === 'daily') {
       update(state => state.daily[today] ? state : {
         ...state, daily: { ...state.daily, [today]: { questions: dailyQuestions(cards, missed), answers: [] } },
@@ -48,14 +52,12 @@ export default function Challenges({ cards, records, progress, sound, disabled, 
       setSession({ mode, chapter, questions, answers: [] });
     }
     setFeedback(null);
-    onActive(true);
   }
 
   function back() {
     returning.current = true;
     setSession(null);
     setFeedback(null);
-    onActive(false);
   }
 
   function answer(choice, index) {
@@ -81,7 +83,7 @@ export default function Challenges({ cards, records, progress, sound, disabled, 
     if (!accepted) return;
     if (!activeDaily) setSession({ ...session, answers, finished });
     setFeedback({ index, question: current, number: answers.length });
-    void Promise.resolve(sound.unlock?.()).then(() => sound.play(choice.correct ? 'correct' : 'incorrect', 'practice'));
+    void Promise.resolve(sound.unlock?.()).then(() => sound.play(choice.correct ? 'correct' : 'incorrect', 'home'));
   }
 
   if (!session) return (
@@ -93,7 +95,7 @@ export default function Challenges({ cards, records, progress, sound, disabled, 
           <p className="field-hint">{streak.skipUsed ? 'This week’s skip has been used.' : 'One missed day is covered each week.'}</p>
         </div>
         <button ref={returnRef} className="primary" type="button" disabled={disabled} onClick={() => start('daily')}>
-          {daily?.finished ? 'View today’s result' : daily ? 'Continue today’s challenge' : 'Start today’s challenge'}
+          {onSignIn ? 'Sign in to play' : daily?.finished ? 'View today’s result' : daily ? 'Continue today’s challenge' : 'Start today’s challenge'}
         </button>
       </div>
       <div className="challenge-options">
@@ -126,7 +128,7 @@ export default function Challenges({ cards, records, progress, sound, disabled, 
 
   return (
     <section className="panel challenge-panel challenge-session" aria-label={title}>
-      <div className="session-line"><h2 ref={titleRef} tabIndex={-1}>{title}</h2><button className="text-button" type="button" onClick={back}>Back to practice</button></div>
+      <div className="session-line"><h2 ref={titleRef} tabIndex={-1}>{title}</h2><button className="text-button" type="button" onClick={back}>Back to challenges</button></div>
       {expired || !attempt ? <p>A new daily challenge is ready.</p>
         : current ? <>
           <p className="field-hint">Question {feedback?.number ?? attempt.answers.length + 1} of {attempt.questions.length}</p>

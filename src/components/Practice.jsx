@@ -1,7 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { recordMistake } from '../challenges.js';
-import { useChallenges } from '../useChallenges.js';
-import Challenges from './Challenges.jsx';
 import AnswerDetails from './AnswerDetails.jsx';
 import { choicesFor, english, german, shuffle } from '../study.js';
 
@@ -24,9 +22,7 @@ function Options({ label, value, items, onChange, disabled }) {
   );
 }
 
-export default function Practice({ active, level, cards, records, quizCandidates, track, sound, review, onExitReview, ready, guestRemaining, saving, setSaving, learner, onSignIn }) {
-  const progress = useChallenges(learner);
-  const [inChallenge, setInChallenge] = useState(false);
+export default function Practice({ active, level, cards, records, quizCandidates, track, sound, review, onExitReview, ready, guestRemaining, saving, setSaving, progress }) {
   const [savedIds, setSavedIds] = useState(() => new Set());
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [mode, setMode] = useState('mcq');
@@ -59,10 +55,7 @@ export default function Practice({ active, level, cards, records, quizCandidates
     return message;
   }
 
-  useEffect(() => {
-    setDirectionLocked(false);
-    if (review) setInChallenge(false);
-  }, [review]);
+  useEffect(() => { setDirectionLocked(false); }, [review]);
 
   function reset() {
     setMixed(null);
@@ -85,13 +78,7 @@ export default function Practice({ active, level, cards, records, quizCandidates
           : 'Guest practice · ' + guestRemaining + (guestRemaining === 1 ? ' answer left' : ' answers left')}
         </p>
       </div>
-      {signedIn ? !review && <Challenges {...{ cards, records, progress, sound }} disabled={saving || !ready}
-        onActive={setInChallenge} />
-        : <div className="panel daily-challenge">
-          <div><h2>Daily 5</h2><p>Five quick questions to build your streak.</p></div>
-          <button className="outline" type="button" onClick={onSignIn}>Sign in to play</button>
-        </div>}
-      <div className="layout" hidden={inChallenge}>
+      <div className="layout">
         <aside className="settings">
           <button className="settings-toggle" type="button" aria-expanded={optionsOpen} aria-controls="study-options"
             onClick={() => setOptionsOpen(open => !open)}>
@@ -149,7 +136,7 @@ export default function Practice({ active, level, cards, records, quizCandidates
             </div>
           )}
           <Session key={round + ':' + (review?.id ?? '')} {...{
-            active: active && !inChallenge, deck, completedIds, unansweredOnly, mode, direction, ready, saving, setSaving, setDirectionLocked,
+            active, deck, completedIds, unansweredOnly, mode, direction, ready, saving, setSaving, setDirectionLocked,
           }} track={saveAnswer} sound={sound} candidates={quizCandidates ?? cards} onRestart={reset} onPracticeAll={() => changeFilter(setScope, 'all')} />
         </div>
       </div>
