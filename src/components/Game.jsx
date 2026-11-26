@@ -39,8 +39,8 @@ function GameLobby({ uid, name, game, cards, sound }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  async function openRoom(event, action, fallback) {
-    event.preventDefault();
+  async function openRoom(action, fallback) {
+    if (busy) return;
     unlock?.();
     setBusy(true);
     setError('');
@@ -58,12 +58,16 @@ function GameLobby({ uid, name, game, cards, sound }) {
 
   return (
     <div className="game-lobby">
-      <form className="panel game-panel" onSubmit={event => void openRoom(event, async () => {
-        const trimmed = displayName.trim();
-        if (!trimmed) throw new GameError('Enter a display name.');
-        await game.join(code, uid, trimmed);
-        return code;
-      }, 'Couldn’t join the room. Check the room code and try again.')}>
+      <form className="panel game-panel" onSubmit={event => {
+        event.preventDefault();
+        if (!validCode.test(code)) return;
+        void openRoom(async () => {
+          const trimmed = displayName.trim();
+          if (!trimmed) throw new GameError('Enter a display name.');
+          await game.join(code, uid, trimmed);
+          return code;
+        }, 'Couldn’t join the room. Check the room code and try again.');
+      }}>
         <h2>Join a room</h2>
         <label className="field">Room code
           <input name="code" value={code} onChange={event => setCode(event.target.value.toUpperCase().trim())}
@@ -73,30 +77,33 @@ function GameLobby({ uid, name, game, cards, sound }) {
           <input value={displayName} onChange={event => setNickname(event.target.value)}
             maxLength={24} autoComplete="nickname" required />
         </label>
-        <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
+        <div className="game-answer">
+          <button className="primary" disabled={busy || !validCode.test(code)} type="submit">Join room</button>
+          <button className="outline" disabled={busy} type="button"
+            onClick={() => void openRoom(() => game.create(uid, roomSettings()), 'Couldn’t open your room. Please try again.')}>
+            Open game room
+          </button>
+        </div>
       </form>
-      <RoomSettingsForm title="Host a room" submitLabel="Open game room" busy={busy}
-        onSubmit={(event, settings) => void openRoom(event, () => game.create(uid, settings), 'Couldn’t open your room. Please try again.')} />
       {error && <p className="game-error" role="status">{error}</p>}
     </div>
   );
 }
 
-function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart }) {
+function RoomSettingsForm({ busy, onSave, room, onStart }) {
   const defaults = roomSettings(room);
   const [settings, setSettings] = useState(defaults);
   const { level, chapter, type, seconds, totalRounds } = settings;
-  const changed = !room || Object.keys(defaults).some(key => settings[key] !== defaults[key]);
-  const hasGuests = room && Object.keys(room.players).length > 0;
+  const changed = Object.keys(defaults).some(key => settings[key] !== defaults[key]);
+  const hasGuests = Object.keys(room.players).length > 0;
 
   function submit(event) {
+    event.preventDefault();
     if (event.nativeEvent.submitter?.value === 'start') {
-      event.preventDefault();
       if (!busy && hasGuests) onStart(settings);
       return;
     }
-    if (!busy && changed) onSubmit(event, settings);
-    else event.preventDefault();
+    if (!busy && changed) onSave(settings);
   }
 
   function change(key, value) {
@@ -105,8 +112,7 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
 
   return (
     <form className="panel game-panel" onSubmit={submit}>
-      <h2>{title}</h2>
-      {!room && <p>Finished games get a new room code.</p>}
+      <h2>Room settings</h2>
       <label className="field">German level
         <select value={level} disabled><option value="A1">A1</option></select>
       </label>
@@ -130,11 +136,10 @@ function RoomSettingsForm({ title, submitLabel, busy, onSubmit, room, onStart })
           onChange={event => change('totalRounds', event.target.value === '' ? '' : Number(event.target.value))} required />
       </label>
       <div className="game-answer">
-        <button className={room ? 'outline' : 'primary'} type="submit" disabled={busy || !changed}>{submitLabel}</button>
-        {room && <button className="primary" type="submit" value="start"
-          disabled={busy || !hasGuests}>Start game</button>}
+        <button className="outline" type="submit" disabled={busy || !changed}>Save settings</button>
+        <button className="primary" type="submit" value="start" disabled={busy || !hasGuests}>Start game</button>
       </div>
-      {room && !hasGuests && <p>At least one guest must join before you can start.</p>}
+      {!hasGuests && <p>At least one guest must join before you can start.</p>}
     </form>
   );
 }
@@ -266,11 +271,8 @@ function RoomMatch({ code, uid, game, cards, playSound, onOpen, onExit, room, ma
       </div>}
 
       {host && room.phase === 'lobby' && <RoomSettingsForm key={JSON.stringify(roomSettings(room))}
-        title="Room settings" submitLabel="Save settings" busy={busy} room={room} onStart={start}
-        onSubmit={(event, settings) => {
-          event.preventDefault();
-          void perform(() => game.updateSettings(code, settings, room), 'Couldn’t save these settings. Please try again.');
-        }} />}
+        busy={busy} room={room} onStart={start}
+        onSave={settings => void perform(() => game.updateSettings(code, settings, room), 'Couldn’t save these settings. Please try again.')} />}
 
       {room.phase === 'playing' && (prompt
         ? <TimedRound key={room.round} {...{ room, match, prompt, code, uid, game, playSound }} />
