@@ -152,9 +152,10 @@ function GameRoom({ code, uid, game, cards, playSound, onOpen, onExit }) {
     }
   }, error => setConnectionError(gameError(error, 'Couldn’t load this room. Go back to Game and try joining again.'))), [code, game]);
 
-  if (connectionError || !room) {
+  const removed = room && room.host !== uid && !Object.hasOwn(room.players, uid);
+  if (removed || connectionError || !room) {
     return <div className="panel game-panel">
-      <p role="status">{connectionError || 'Joining room…'}</p>
+      <p role="status">{removed ? 'You were removed from the room.' : connectionError || 'Joining room…'}</p>
       <button className="outline" type="button" onClick={onExit}>Back to Game</button>
     </div>;
   }
@@ -242,10 +243,10 @@ function RoomMatch({ code, uid, game, cards, playSound, onOpen, onExit, room, ma
         <button className="outline small" type="button" disabled={busy} onClick={() => void perform(async () => {
           if (!host && room.phase === 'finished') {
             onExit();
-            void game.leave(code, uid).catch(() => {});
+            void game.removePlayer(code, uid).catch(() => {});
             return;
           }
-          if (!host) await game.leave(code, uid);
+          if (!host) await game.removePlayer(code, uid);
           onExit();
         }, 'Couldn’t leave the room. Please try again.')}>Leave room</button>
       </div>
@@ -253,7 +254,15 @@ function RoomMatch({ code, uid, game, cards, playSound, onOpen, onExit, room, ma
       {room.phase === 'lobby' && <div className="panel game-panel">
         <h2>Waiting room</h2>
         <p>{host ? 'Share the room code, then start when everyone is ready.' : 'The host will start the game.'}</p>
-        {!!players.length && <ul className="game-players">{players.map(([id, name]) => <li key={id}>{name}</li>)}</ul>}
+        {!!players.length && <ul className="game-players">
+          {players.map(([id, name]) => <li key={id}>
+            <span>{name}</span>
+            {host && <button className="text-button" type="button" disabled={busy} aria-label={`Remove ${name}`}
+              onClick={() => void perform(() => game.removePlayer(code, id), 'Couldn’t remove the guest. Please try again.')}>
+              Remove
+            </button>}
+          </li>)}
+        </ul>}
       </div>}
 
       {host && room.phase === 'lobby' && <RoomSettingsForm key={JSON.stringify(roomSettings(room))}

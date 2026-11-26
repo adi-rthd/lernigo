@@ -164,6 +164,13 @@ service cloud.firestore {
             || (uid in previous.players && !(uid in next.players)));
       }
 
+      function removeGuest(previous, next) {
+        let changes = next.players.diff(previous.players);
+        return host(previous) && previous.phase == 'lobby'
+          && next.diff(previous).affectedKeys().hasOnly(['players'])
+          && changes.affectedKeys().size() == 1 && changes.removedKeys().size() == 1;
+      }
+
       function updateSettings(previous, next) {
         return host(previous) && previous.phase == 'lobby'
           && next.diff(previous).affectedKeys().hasOnly(['type', 'seconds', 'level', 'chapter', 'totalRounds'])
@@ -191,6 +198,7 @@ service cloud.firestore {
       allow list: if host(resource.data);
       allow create: if validNewRoom(request.resource.data) && linkedRoom();
       allow update: if signedIn() && (updatePlayers(resource.data, request.resource.data)
+        || removeGuest(resource.data, request.resource.data)
         || updateSettings(resource.data, request.resource.data)
         || startRound(resource.data, request.resource.data) || revealRound(resource.data, request.resource.data));
 

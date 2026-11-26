@@ -58,7 +58,7 @@ export function gameFirebase(db, store) {
       if (Object.keys(room.players).length >= gameSeats) throw new GameError('This room already has 10 players.');
       transaction.update(ref, { players: { ...room.players, [uid]: name } });
     }),
-    leave: (code, uid) => store.runTransaction(db, async transaction => {
+    removePlayer: (code, uid) => store.runTransaction(db, async transaction => {
       const ref = roomRef(code);
       const room = (await transaction.get(ref)).data();
       if (!room || room.host === uid || !Object.hasOwn(room.players, uid)) return;
