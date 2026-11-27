@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import PracticeBanner from './PracticeBanner.jsx';
 import units from '../data/a1-course.json';
 import { speakGerman } from '../germanSpeech.js';
 import { readLocal, writeLocal } from '../useAccount.js';
@@ -114,6 +115,7 @@ export default function LearnA1({ lessonId, learner }) {
           {lesson.task && <div className="panel a1-card">
             <h2>Try it yourself</h2><p>{lesson.task}</p>
           </div>}
+          <PracticeBanner inline />
           <Practice key={lesson.id} questions={lesson.practice} onFinish={finish} next={next} />
           {storageError && <p role="status">This browser couldn’t save your progress.</p>}
         </> : <>
@@ -126,6 +128,7 @@ export default function LearnA1({ lessonId, learner }) {
               </div>)}
             </dl>
           </div>
+          <PracticeBanner inline />
         </>}
       </div>
     </section>

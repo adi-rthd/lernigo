@@ -441,10 +441,11 @@ dialog::backdrop { background: var(--backdrop); }
 @media (min-width: 1160px) {
   main:has(> .practice-banner) { position: relative; min-height: 660px; }
   main:has(> .practice-banner-left) > #game { width: min(100%, 730px); margin-inline: auto; }
-  .practice-banner { position: absolute; top: 30px; width: 160px; }
+  .practice-banner:not(.practice-banner-inline) { position: absolute; top: 30px; width: 160px; }
   .practice-banner-left { right: calc(50% + 402px); }
   .practice-banner-right { left: calc(50% + 402px); }
 }
+.practice-banner-inline { width: 320px; margin: 16px auto; }
 .practice-banner iframe { display: block; border: 0; }
 .practice-banner-preview {
   display: grid;
