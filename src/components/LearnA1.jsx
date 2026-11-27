@@ -11,6 +11,7 @@ export default function LearnA1({ lessonId, learner }) {
   const storageKey = 'lernigo:learn-a1:' + learner;
   const [results, setResults] = useState(() => readResults(storageKey));
   const [storageError, setStorageError] = useState(false);
+  const [topicsOpen, setTopicsOpen] = useState(false);
   const heading = useRef(null);
   const index = course.findIndex(lesson => lesson.id === lessonId);
   const lesson = course[index];
@@ -22,6 +23,11 @@ export default function LearnA1({ lessonId, learner }) {
     heading.current?.focus({ preventScroll: true });
   }, [lessonId]);
 
+  function selectTopic(id) {
+    setTopicsOpen(false);
+    if (lesson?.id === id) heading.current?.focus();
+  }
+
   function finish(score) {
     const saved = readResults(storageKey);
     const updated = { ...results, ...saved, [lesson.id]: Math.max(score, results[lesson.id] ?? 0, saved[lesson.id] ?? 0) };
@@ -31,49 +37,70 @@ export default function LearnA1({ lessonId, learner }) {
 
   return (
     <section id="learn" className="a1-course">
-      <div className="intro a1-intro">
-        {lesson && <a className="a1-back" href="#learn">← All A1 lessons</a>}
-        {lesson && <p className="kicker">Unit {lesson.number} · {lesson.unit.title}</p>}
-        <h1 tabIndex={-1} ref={heading}>{lesson?.title ?? 'Learn A1'}</h1>
-        {!lesson && <p>Learn everyday German with short explanations, examples, and practice.</p>}
-      </div>
-      {lesson ? <>
-        {lesson.rule && <div className="panel a1-card">
-          <h2>The rule</h2>
-          <p>{lesson.rule}</p>
-          <dl className="a1-examples">
-            {lesson.examples.map(([german, english]) => <div key={german}>
-              <dt lang="de">{german}</dt><dd>{english}</dd>
-            </div>)}
-          </dl>
-        </div>}
-        {lesson.task && <div className="panel a1-card">
-          <h2>Try it aloud</h2><p>{lesson.task}</p>
-        </div>}
-        <Practice key={lesson.id} questions={lesson.practice} onFinish={finish} next={next} />
-        {storageError && <p role="status">This browser couldn’t save your progress.</p>}
-      </> : <>
-        <div className="panel a1-overview">
-          <div><strong>{completed} of {course.length} activities finished</strong>
-            <progress value={completed} max={course.length} aria-label="Course progress" />
-            <p>Progress is saved in this browser.</p>
-          </div>
-          {resume && <a className="primary" href={'#learn/' + resume.id}>{completed ? 'Continue learning' : 'Start Unit 1'}</a>}
-        </div>
-        <div className="a1-units">
-          {units.map((unit, i) => <section key={unit.title} className="panel a1-card">
-            <h2>Unit {i + 1} · {unit.title}</h2>
-            <p>{unit.goal}</p>
+      <aside className="a1-sidebar panel">
+        <h2 className="a1-sidebar-title">Course topics</h2>
+        <button type="button" className="a1-topic-toggle outline" aria-expanded={topicsOpen}
+          aria-controls="a1-topic-navigation" onClick={() => setTopicsOpen(open => !open)}>
+          Course topics
+        </button>
+        <nav id="a1-topic-navigation" aria-label="A1 course topics" data-open={topicsOpen}>
+          <a className="a1-overview-link" href="#learn" aria-current={lesson ? undefined : 'page'}
+            onClick={() => selectTopic(undefined)}>Course overview</a>
+          {units.map((unit, i) => <div className="a1-topic-group" key={unit.title}>
+            <h3>Unit {i + 1} · {unit.title}</h3>
             <ul className="a1-lesson-list">
               {course.filter(item => item.unit === unit).map(item => <li key={item.id}>
-                <a href={'#learn/' + item.id}>{item.title}
-                  {Object.hasOwn(results, item.id) && <small>{results[item.id]}/{item.practice.length} best</small>}
+                <a href={'#learn/' + item.id} aria-current={lesson?.id === item.id ? 'page' : undefined}
+                  onClick={() => selectTopic(item.id)}>
+                  <span>{item.title}</span>
+                  {Object.hasOwn(results, item.id) && <small aria-label={results[item.id] + ' of ' + item.practice.length + ' correct, best score'}>
+                    {results[item.id]}/{item.practice.length}
+                  </small>}
                 </a>
               </li>)}
             </ul>
-          </section>)}
+          </div>)}
+        </nav>
+      </aside>
+      <div className="a1-content">
+        <div className="intro a1-intro">
+          {lesson && <p className="kicker">Unit {lesson.number} · {lesson.unit.title}</p>}
+          <h1 tabIndex={-1} ref={heading}>{lesson?.title ?? 'Learn A1'}</h1>
+          {!lesson && <p>Learn everyday German with short explanations, examples, and practice.</p>}
         </div>
-      </>}
+        {lesson ? <>
+          {lesson.rule && <div className="panel a1-card">
+            <h2>The rule</h2>
+            <p>{lesson.rule}</p>
+            <dl className="a1-examples">
+              {lesson.examples.map(([german, english]) => <div key={german}>
+                <dt lang="de">{german}</dt><dd>{english}</dd>
+              </div>)}
+            </dl>
+          </div>}
+          {lesson.task && <div className="panel a1-card">
+            <h2>Try it aloud</h2><p>{lesson.task}</p>
+          </div>}
+          <Practice key={lesson.id} questions={lesson.practice} onFinish={finish} next={next} />
+          {storageError && <p role="status">This browser couldn’t save your progress.</p>}
+        </> : <>
+          <div className="panel a1-overview">
+            <div><strong>{completed} of {course.length} activities finished</strong>
+              <progress value={completed} max={course.length} aria-label="Course progress" />
+              <p>Progress is saved in this browser.</p>
+            </div>
+            {resume && <a className="primary" href={'#learn/' + resume.id}>{completed ? 'Continue learning' : 'Start Unit 1'}</a>}
+          </div>
+          <div className="panel a1-card">
+            <h2>What you’ll learn</h2>
+            <dl className="a1-examples">
+              {units.map((unit, i) => <div key={unit.title}>
+                <dt>Unit {i + 1} · {unit.title}</dt><dd>{unit.goal}</dd>
+              </div>)}
+            </dl>
+          </div>
+        </>}
+      </div>
     </section>
   );
 }
