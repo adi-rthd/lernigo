@@ -149,7 +149,17 @@ export default function App() {
           signedIn={!!user} guestRemaining={guestLimit - guestAttempts}
           onSignIn={() => setDialogOpen(true)}
           review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />
-        {page === 'learn' && <LearnA1 key={learner} lessonId={lessonId} learner={learner} />}
+        {page === 'learn' && (ready && user
+          ? <LearnA1 key={learner} lessonId={lessonId} learner={learner} />
+          : <section id="learn">
+            <div className="intro"><h1>Learn A1</h1></div>
+            <div className="panel end-state">
+              {ready ? <>
+                <p>Sign in to access the A1 course.</p>
+                <div className="end-actions"><button type="button" className="primary" onClick={() => setDialogOpen(true)}>Sign in</button></div>
+              </> : <p role="status">Checking your session…</p>}
+            </div>
+          </section>)}
         {page === 'read' && <Read cards={a1Cards} />}
         {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
@@ -183,7 +193,7 @@ export default function App() {
       <footer><span>Lernigo</span><span>German vocabulary · {availableLevels.join(", ")}</span></footer>
       {dialogOpen && <AccountDialog account={account} onClose={() => setDialogOpen(false)} onRegistered={() => {
         setReview(null);
-        if (page !== 'game' && page !== 'home') location.hash = 'practice';
+        if (page !== 'game' && page !== 'home' && page !== 'learn') location.hash = 'practice';
       }} />}
     </>
   );
@@ -202,7 +212,17 @@ function StudyPages({ page, level, learner, cards, records, locked, track, sound
           </div>
           <a className="outline" href="#practice">Go to practice</a>
         </div>
-        {page === 'home' && <HomeA1 learner={learner} />}
+        {page === 'home' && (signedIn && ready
+          ? <HomeA1 learner={learner} />
+          : <section className="a1-home" aria-labelledby="home-a1-title">
+            <div className="panel a1-card">
+              <h2 id="home-a1-title">Learn A1</h2>
+              <p>Learn everyday German with short explanations, examples, and practice.</p>
+              <div className="a1-actions">
+                <button className="primary" type="button" disabled={!ready} onClick={onSignIn}>Sign in to learn</button>
+              </div>
+            </div>
+          </section>)}
         <Challenges cards={a1Cards} {...{ records, progress, sound }} disabled={saving || !ready}
           onSignIn={signedIn ? null : onSignIn} />
       </section>
