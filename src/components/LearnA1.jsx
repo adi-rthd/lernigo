@@ -145,14 +145,12 @@ function CourseProgress({ results, children }) {
   return (
     <div className="panel a1-overview">
       {children}
-      <div>
-        <strong>{completed} of {course.length} activities finished</strong>
-        <progress value={completed} max={course.length} aria-label="Course progress" />
-        <p>Progress is saved in this browser.</p>
-      </div>
+      <strong>{completed} of {course.length} activities finished</strong>
+      <progress value={completed} max={course.length} aria-label="Course progress" />
       <a className="primary" href={resume ? '#learn/' + resume.id : '#learn'}>
         {resume ? (completed ? 'Continue learning' : 'Start Unit 1') : 'Review course'}
       </a>
+      <p>Progress is saved in this browser.</p>
     </div>
   );
 }

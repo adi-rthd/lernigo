@@ -492,7 +492,6 @@ dialog::backdrop { background: var(--backdrop); }
 .a1-home { margin-bottom: 24px; }
 .a1-home h2 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.85rem, 4vw, 2.5rem); font-weight: 500; color: var(--forest-deep); }
 .a1-home h2 a:hover { text-decoration: underline; }
-.a1-overview-heading { flex-basis: 100%; }
 .a1-overview-heading p { margin-top: 4px; }
 .a1-content { min-width: 0; overflow-wrap: anywhere; }
 .a1-content .intro { padding-top: 0; }
@@ -563,8 +562,10 @@ dialog::backdrop { background: var(--backdrop); }
   .a1-topic-toggle[aria-expanded='true']::after { transform: translateY(2px) rotate(225deg); }
 }
 .a1-overview, .a1-card { padding: clamp(16px, 4vw, 24px); margin-bottom: 14px; }
-.a1-overview { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-.a1-overview progress { display: block; width: 100%; margin: 7px 0; accent-color: var(--forest); }
+.a1-overview { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; }
+.a1-overview > :is(header, strong, p) { grid-column: 1 / -1; }
+.a1-overview progress { min-width: 0; margin: 0; accent-color: var(--forest); }
+.a1-overview > .primary { white-space: nowrap; }
 .a1-overview p, .a1-card h2 + p { color: var(--muted); }
 .a1-card h2 + p { margin-top: 7px; }
 .game-article-help a { text-decoration: underline; }
