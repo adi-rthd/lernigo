@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccountDialog, ProfileSettings } from './components/Account.jsx';
 import Challenges from './components/Challenges.jsx';
 import Game from './components/Game.jsx';
-import LearnA1 from './components/LearnA1.jsx';
+import LearnA1, { HomeA1 } from './components/LearnA1.jsx';
 import Practice from './components/Practice.jsx';
 import PracticeBanner from './components/PracticeBanner.jsx';
 import Progress from './components/Progress.jsx';
@@ -200,11 +200,9 @@ function StudyPages({ page, level, learner, cards, records, locked, track, sound
             <p className="kicker">German vocabulary <span className="intro-level">{level}</span></p>
             <h1>Home</h1>
           </div>
-          <div className="a1-actions">
-            <a className="outline" href="#practice">Go to practice</a>
-            <a className="primary" href="#learn">Learn A1</a>
-          </div>
+          <a className="outline" href="#practice">Go to practice</a>
         </div>
+        {page === 'home' && <HomeA1 learner={learner} />}
         <Challenges cards={a1Cards} {...{ records, progress, sound }} disabled={saving || !ready}
           onSignIn={signedIn ? null : onSignIn} />
       </section>

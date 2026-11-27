@@ -713,5 +713,1276 @@
         "Milch means milk and zum Frühstück means for breakfast."
       ]
     ]
+  },
+  {
+    "title": "Time and daily routines",
+    "goal": "Tell the time, make plans, and describe a typical day.",
+    "lessons": [
+      {
+        "id": "clock-times",
+        "title": "Tell the time",
+        "rule": "Ask Wie spät ist es? To tell the hour, use Es ist plus the number and Uhr. Use fünf Uhr dreißig for 5:30. In everyday speech, halb sechs also means 5:30 because it is halfway to six.",
+        "examples": [
+          [
+            "Es ist acht Uhr.",
+            "It’s eight o’clock."
+          ],
+          [
+            "Es ist halb zehn.",
+            "It’s half past nine."
+          ]
+        ],
+        "practice": [
+          [
+            "What time is halb acht?",
+            [
+              "8:30",
+              "7:30",
+              "8:00"
+            ],
+            1,
+            "Halb acht means halfway to eight, so it is 7:30."
+          ],
+          [
+            "Which phrase means 13:15?",
+            [
+              "dreizehn Uhr fünfzig",
+              "drei Uhr fünfzehn",
+              "dreizehn Uhr fünfzehn"
+            ],
+            2,
+            "Dreizehn is thirteen and fünfzehn is fifteen."
+          ]
+        ]
+      },
+      {
+        "id": "days-and-dates",
+        "title": "Use am, um, and im",
+        "rule": "Use am for a day or a date, um for the clock time, and im for a month or season. In a date like am dritten Mai, the ordinal tells you the day of the month.",
+        "examples": [
+          [
+            "Wir treffen uns am Montag um neun Uhr.",
+            "We’re meeting on Monday at nine."
+          ],
+          [
+            "Der Kurs beginnt am dritten Mai.",
+            "The course starts on the third of May."
+          ],
+          [
+            "Im Juni habe ich Urlaub.",
+            "I’m on holiday in June."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the phrase. Wir treffen uns ___ Freitag.",
+            [
+              "am",
+              "um",
+              "im"
+            ],
+            0,
+            "Use am for a day of the week."
+          ],
+          [
+            "Complete the phrase. Der Zug fährt ___ sieben Uhr.",
+            [
+              "im",
+              "am",
+              "um"
+            ],
+            2,
+            "Use um for a clock time."
+          ]
+        ]
+      },
+      {
+        "id": "separable-verbs",
+        "title": "Describe your routine with separable verbs",
+        "rule": "In a simple main clause, the prefix of a separable verb goes to the end. With aufstehen, write Ich stehe … auf. If you start with a time phrase, the conjugated verb still occupies the second position, so the subject follows it.",
+        "examples": [
+          [
+            "Ich stehe um sieben Uhr auf.",
+            "I get up at seven."
+          ],
+          [
+            "Am Abend kaufe ich ein.",
+            "I go shopping in the evening."
+          ]
+        ],
+        "practice": [
+          [
+            "Choose the correct sentence for “I get up at six.”",
+            [
+              "Ich aufstehe um sechs Uhr.",
+              "Ich stehe um sechs Uhr auf.",
+              "Ich stehe auf um sechs Uhr auf."
+            ],
+            1,
+            "Use stehe after ich and put auf at the end."
+          ],
+          [
+            "Which word comes after Am Morgen in this sentence?",
+            [
+              "ich",
+              "auf",
+              "stehe"
+            ],
+            2,
+            "In Am Morgen stehe ich auf, the conjugated verb goes after the time phrase."
+          ]
+        ]
+      }
+    ],
+    "task": "Say when you get up and what you do in the evening. Then suggest a day and time to meet a friend.",
+    "review": [
+      [
+        "Which phrase means “in August”?",
+        [
+          "am August",
+          "im August",
+          "um August"
+        ],
+        1,
+        "Use im with a month."
+      ],
+      [
+        "What time is halb elf?",
+        [
+          "10:30",
+          "11:30",
+          "10:00"
+        ],
+        0,
+        "It is halfway to eleven."
+      ],
+      [
+        "Choose “Today I’m going shopping.”",
+        [
+          "Heute ich kaufe ein.",
+          "Heute kaufe ein ich.",
+          "Heute kaufe ich ein."
+        ],
+        2,
+        "Heute is the first part, kaufe comes next, and ein goes at the end."
+      ]
+    ]
+  },
+  {
+    "title": "Hobbies and weekend plans",
+    "goal": "Talk about preferences, abilities, plans, and obligations.",
+    "lessons": [
+      {
+        "id": "hobby-preferences",
+        "title": "Say what you like with gern and lieber",
+        "rule": "Use gern with a verb to say you enjoy an activity. Use lieber when you prefer one activity over another. The activity stays in the verb.",
+        "examples": [
+          [
+            "Ich lese gern.",
+            "I like reading."
+          ],
+          [
+            "Ich spiele lieber Fußball.",
+            "I prefer playing football."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete “I like cooking.” Ich koche ___.",
+            [
+              "gern",
+              "kann",
+              "will"
+            ],
+            0,
+            "Gern with koche means that you enjoy cooking."
+          ],
+          [
+            "Which sentence expresses a preference?",
+            [
+              "Ich schwimme gern.",
+              "Ich schwimme lieber.",
+              "Ich schwimme heute."
+            ],
+            1,
+            "Lieber means “rather” or “prefer” in this expression."
+          ]
+        ]
+      },
+      {
+        "id": "modal-verbs",
+        "title": "Say what you can, want to, or must do",
+        "rule": "Können expresses ability or possibility, wollen expresses intention, and müssen expresses necessity. With ich, use kann, will, or muss. In a simple statement, the modal is the conjugated verb and the other verb goes at the end in its infinitive form.",
+        "examples": [
+          [
+            "Ich kann gut schwimmen.",
+            "I can swim well."
+          ],
+          [
+            "Wir wollen am Samstag tanzen.",
+            "We want to dance on Saturday."
+          ],
+          [
+            "Ich muss morgen arbeiten.",
+            "I have to work tomorrow."
+          ]
+        ],
+        "practice": [
+          [
+            "Say “I have to learn German.”",
+            [
+              "Ich kann Deutsch lernen.",
+              "Ich muss Deutsch lernen.",
+              "Ich muss lerne Deutsch."
+            ],
+            1,
+            "Muss expresses necessity and the infinitive lernen comes last."
+          ],
+          [
+            "Complete “I want to play.” Ich ___ spielen.",
+            [
+              "muss",
+              "kann",
+              "will"
+            ],
+            2,
+            "Will is the ich form of wollen."
+          ]
+        ]
+      },
+      {
+        "id": "weekend-invitations",
+        "title": "Invite someone and reply",
+        "rule": "To ask a yes/no question with a modal, start with the conjugated modal and put the other verb at the end. With du, use kannst, willst, or musst. You can accept with Ja, gern or decline with Leider habe ich keine Zeit.",
+        "examples": [
+          [
+            "Willst du am Sonntag mitkommen?",
+            "Do you want to come along on Sunday?"
+          ],
+          [
+            "Leider kann ich am Sonntag nicht kommen.",
+            "Unfortunately I can’t come on Sunday."
+          ]
+        ],
+        "practice": [
+          [
+            "Choose the correct question for “Can you come tomorrow?”",
+            [
+              "Du kannst morgen kommen?",
+              "Kannst du kommen morgen kannst?",
+              "Kannst du morgen kommen?"
+            ],
+            2,
+            "Put kannst first and kommen last in this yes/no question."
+          ],
+          [
+            "Which reply accepts the invitation?",
+            [
+              "Ja, gern!",
+              "Leider nicht.",
+              "Ich habe keine Zeit."
+            ],
+            0,
+            "Ja, gern is a friendly acceptance."
+          ]
+        ]
+      }
+    ],
+    "task": "Invite someone to do an activity on Saturday. Make up a reply that accepts or says why they’re busy.",
+    "review": [
+      [
+        "Say “I prefer reading.”",
+        [
+          "Ich lese morgen.",
+          "Ich lese lieber.",
+          "Ich muss lesen."
+        ],
+        1,
+        "Lieber is the word that expresses the preference."
+      ],
+      [
+        "Which modal expresses ability?",
+        [
+          "wollen",
+          "müssen",
+          "können"
+        ],
+        2,
+        "Können expresses being able to do something."
+      ],
+      [
+        "Complete the sentence. Du ___ am Samstag arbeiten. (have to)",
+        [
+          "musst",
+          "muss",
+          "müssen"
+        ],
+        0,
+        "Use musst with du."
+      ]
+    ]
+  },
+  {
+    "title": "Shopping and clothes",
+    "goal": "Ask about prices and sizes, and choose what to buy.",
+    "lessons": [
+      {
+        "id": "prices-and-quantities",
+        "title": "Ask how much or how many",
+        "rule": "Use Wie viel for an amount or price and Wie viele for countable plural items. Kostet goes with one item and kosten goes with plural items. For quantities, you can use ein Kilo, ein Liter, or a number plus a plural noun.",
+        "examples": [
+          [
+            "Wie viel kostet das Hemd?",
+            "How much does the shirt cost?"
+          ],
+          [
+            "Wie viele Äpfel möchten Sie?",
+            "How many apples would you like?"
+          ],
+          [
+            "Ein Kilo Äpfel, bitte.",
+            "One kilo of apples, please."
+          ]
+        ],
+        "practice": [
+          [
+            "How do you ask the price of one jacket?",
+            [
+              "Wie viel kostet die Jacke?",
+              "Wie viele kostet die Jacke?",
+              "Wie viele kosten die Jacke?"
+            ],
+            0,
+            "Ask the price with Wie viel and use singular kostet."
+          ],
+          [
+            "Complete “How many shirts?” ___ Hemden?",
+            [
+              "Wie",
+              "Wie viel",
+              "Wie viele"
+            ],
+            2,
+            "Use Wie viele for countable items in the plural."
+          ]
+        ]
+      },
+      {
+        "id": "choosing-clothes",
+        "title": "Ask which item or size",
+        "rule": "In questions where the item is the subject, use welcher with a masculine noun, welche with a feminine or plural noun, and welches with a neuter noun. Welche Größe? means “Which size?” Use in Größe M to ask for something in size M.",
+        "examples": [
+          [
+            "Welches Hemd passt?",
+            "Which shirt fits?"
+          ],
+          [
+            "Welche Größe passt Ihnen?",
+            "Which size fits you?"
+          ],
+          [
+            "Haben Sie die Hose in Größe M?",
+            "Do you have the trousers in size M?"
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the question. ___ Jacke passt?",
+            [
+              "Welcher",
+              "Welche",
+              "Welches"
+            ],
+            1,
+            "Jacke is feminine, so use welche for this subject."
+          ],
+          [
+            "Complete the question. ___ Pullover ist neu?",
+            [
+              "Welcher",
+              "Welche",
+              "Welches"
+            ],
+            0,
+            "Pullover is masculine, so use welcher for this subject."
+          ]
+        ]
+      },
+      {
+        "id": "describing-clothes",
+        "title": "Describe clothes after sein",
+        "rule": "An adjective after sein keeps its basic form. Say Die Jacke ist blau and Die Jacken sind blau. Use zu before an adjective to mean “too,” as in zu groß or zu teuer.",
+        "examples": [
+          [
+            "Das Hemd ist weiß.",
+            "The shirt is white."
+          ],
+          [
+            "Die Schuhe sind zu klein.",
+            "The shoes are too small."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the sentence. Die Hose ist ___.",
+            [
+              "schwarze",
+              "schwarzes",
+              "schwarz"
+            ],
+            2,
+            "The color adjective stays schwarz after ist."
+          ],
+          [
+            "Which phrase means “too expensive”?",
+            [
+              "sehr teuer",
+              "zu teuer",
+              "nicht teuer"
+            ],
+            1,
+            "Zu before teuer means “too expensive.”"
+          ]
+        ]
+      }
+    ],
+    "task": "Ask the price of an item, ask if it comes in your size, and tell the shop assistant whether it fits.",
+    "review": [
+      [
+        "Complete the price question. Wie viel ___ die Schuhe?",
+        [
+          "kostet",
+          "kosten",
+          "koste"
+        ],
+        1,
+        "Use kosten because die Schuhe is plural."
+      ],
+      [
+        "Choose “Which dress is blue?”",
+        [
+          "Welches Kleid ist blau?",
+          "Welche Kleid ist blau?",
+          "Welcher Kleid ist blau?"
+        ],
+        0,
+        "Kleid is neuter and is the subject, so use welches."
+      ],
+      [
+        "Choose “The trousers are too big.”",
+        [
+          "Die Hose ist große.",
+          "Die Hose ist sehr groß.",
+          "Die Hose ist zu groß."
+        ],
+        2,
+        "Zu groß means “too big.”"
+      ]
+    ]
+  },
+  {
+    "title": "Around town and on the move",
+    "goal": "Find a place, follow directions, and buy a ticket.",
+    "lessons": [
+      {
+        "id": "directions",
+        "title": "Ask for and follow directions",
+        "rule": "Start a polite question with Entschuldigung. Wo ist …? asks where a place is. Wie komme ich zu …? asks how to get there. Listen for links, rechts, and geradeaus.",
+        "examples": [
+          [
+            "Entschuldigung, wo ist der Bahnhof?",
+            "Excuse me, where is the train station?"
+          ],
+          [
+            "Gehen Sie geradeaus und dann nach links.",
+            "Go straight ahead and then left."
+          ]
+        ],
+        "practice": [
+          [
+            "What does geradeaus mean?",
+            [
+              "straight ahead",
+              "to the right",
+              "at the station"
+            ],
+            0,
+            "Geradeaus means straight ahead."
+          ],
+          [
+            "Which direction is nach rechts?",
+            [
+              "back",
+              "right",
+              "left"
+            ],
+            1,
+            "Rechts means right."
+          ]
+        ]
+      },
+      {
+        "id": "where-and-where-to",
+        "title": "Ask wo or wohin",
+        "rule": "Use wo to ask where something or someone is. Use wohin to ask for a destination. Learn nach with a city name, as in nach Bonn, and zum Bahnhof or zur Apotheke for going to those places.",
+        "examples": [
+          [
+            "Wo bist du? – Am Bahnhof.",
+            "Where are you? – At the train station."
+          ],
+          [
+            "Wohin fährst du? – Nach Bonn.",
+            "Where are you going? – To Bonn."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the destination question. ___ fährst du?",
+            [
+              "Wo",
+              "Woher",
+              "Wohin"
+            ],
+            2,
+            "Wohin asks where someone is going."
+          ],
+          [
+            "Which reply gives your current location?",
+            [
+              "Nach Bonn.",
+              "Am Bahnhof.",
+              "Zum Bahnhof."
+            ],
+            1,
+            "Am Bahnhof means at the station."
+          ]
+        ]
+      },
+      {
+        "id": "transport-and-tickets",
+        "title": "Use mit and zu, and buy a ticket",
+        "rule": "Mit and zu take the dative. Learn mit dem Bus, mit der Bahn, zum Bahnhof (zu dem), and zur Haltestelle (zu der). At the ticket counter, say Eine Fahrkarte nach …, bitte. Ask Ist der Zug pünktlich? to check if a train is on time.",
+        "examples": [
+          [
+            "Ich fahre mit dem Bus zum Bahnhof.",
+            "I’m going to the station by bus."
+          ],
+          [
+            "Eine Fahrkarte nach Berlin, bitte.",
+            "One ticket to Berlin, please."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the sentence. Ich fahre mit ___ Bahn.",
+            [
+              "die",
+              "der",
+              "den"
+            ],
+            1,
+            "Bahn is feminine, so mit takes der here."
+          ],
+          [
+            "Which phrase means “to the bus stop”?",
+            [
+              "mit der Haltestelle",
+              "an der Haltestelle",
+              "zur Haltestelle"
+            ],
+            2,
+            "Zur is short for zu der and gives the destination here."
+          ]
+        ]
+      }
+    ],
+    "task": "Ask for directions to the station. Then ask for a ticket to a city of your choice.",
+    "review": [
+      [
+        "Which question asks where the pharmacy is?",
+        [
+          "Wo ist die Apotheke?",
+          "Wohin fährt der Bus?",
+          "Woher kommen Sie?"
+        ],
+        0,
+        "Wo ist asks where a place is."
+      ],
+      [
+        "Complete “by train.” mit ___ Zug",
+        [
+          "der",
+          "den",
+          "dem"
+        ],
+        2,
+        "Zug is masculine. After mit, use dem."
+      ],
+      [
+        "How do you ask for a ticket to Bonn?",
+        [
+          "Eine Fahrkarte aus Bonn, bitte.",
+          "Eine Fahrkarte nach Bonn, bitte.",
+          "Eine Fahrkarte in Bonn, bitte."
+        ],
+        1,
+        "Nach Bonn gives the ticket’s destination."
+      ]
+    ]
+  },
+  {
+    "title": "Home and people",
+    "goal": "Describe where things are and say who receives something.",
+    "lessons": [
+      {
+        "id": "dative-articles",
+        "title": "Recognize basic dative articles",
+        "rule": "In the dative, der and das usually become dem, die for one feminine noun becomes der, and plural die becomes den. A plural noun often also gets an -n if it can take one, as in mit den Kindern. Learn the form in short phrases.",
+        "examples": [
+          [
+            "Wir fahren mit dem Auto.",
+            "We’re going by car."
+          ],
+          [
+            "Ich bin bei meiner Freundin.",
+            "I’m at my friend’s place."
+          ],
+          [
+            "Sie spielt mit den Kindern.",
+            "She’s playing with the children."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete “with the children.” mit ___ Kindern",
+            [
+              "die",
+              "den",
+              "dem"
+            ],
+            1,
+            "Use den for the plural dative."
+          ],
+          [
+            "Complete “with the bag.” mit ___ Tasche",
+            [
+              "der",
+              "die",
+              "dem"
+            ],
+            0,
+            "Feminine die becomes der in the dative."
+          ]
+        ]
+      },
+      {
+        "id": "describing-a-room",
+        "title": "Say where things are and where you put them",
+        "rule": "With a preposition like auf or in, use the dative when you say where something is and the accusative when you say where you put it. Compare auf dem Tisch for location and auf den Tisch for the destination.",
+        "examples": [
+          [
+            "Das Buch liegt auf dem Tisch.",
+            "The book is lying on the table."
+          ],
+          [
+            "Ich lege das Buch auf den Tisch.",
+            "I put the book onto the table."
+          ],
+          [
+            "Der Stuhl steht in der Küche.",
+            "The chair is in the kitchen."
+          ]
+        ],
+        "practice": [
+          [
+            "The phone is already on the table. Das Handy liegt auf ___ Tisch.",
+            [
+              "den",
+              "der",
+              "dem"
+            ],
+            2,
+            "This is a location, so use the dative dem."
+          ],
+          [
+            "You put the phone onto the table. Ich lege das Handy auf ___ Tisch.",
+            [
+              "den",
+              "dem",
+              "der"
+            ],
+            0,
+            "The table is the destination, so use the accusative den."
+          ]
+        ]
+      },
+      {
+        "id": "giving-and-sending",
+        "title": "Identify the person receiving something",
+        "rule": "With verbs such as geben and schicken, the thing given or sent is the direct object in the accusative. The person receiving it is the indirect object in the dative. In meinem Bruder, meinem is the dative form of mein before a masculine noun.",
+        "examples": [
+          [
+            "Ich schicke meinem Bruder eine Nachricht.",
+            "I send my brother a message."
+          ],
+          [
+            "Ich gebe der Nachbarin den Schlüssel.",
+            "I give the neighbour the key."
+          ]
+        ],
+        "practice": [
+          [
+            "Who receives something in Ich gebe der Nachbarin den Schlüssel?",
+            [
+              "der Nachbarin",
+              "den Schlüssel",
+              "ich"
+            ],
+            0,
+            "The neighbour receives the key and is the dative object."
+          ],
+          [
+            "What is sent in Ich schicke meinem Bruder eine Nachricht?",
+            [
+              "meinem Bruder",
+              "eine Nachricht",
+              "ich"
+            ],
+            1,
+            "The message is the thing sent, so it is the direct object."
+          ]
+        ]
+      }
+    ],
+    "task": "Describe where two objects are in your room. Then say who you send a message or give a key to.",
+    "review": [
+      [
+        "Complete the location. Das Glas steht auf ___ Tisch.",
+        [
+          "den",
+          "dem",
+          "der"
+        ],
+        1,
+        "Auf plus dative describes the glass’s location here."
+      ],
+      [
+        "Complete the destination. Ich stelle das Glas auf ___ Tisch.",
+        [
+          "der",
+          "dem",
+          "den"
+        ],
+        2,
+        "Use den for the masculine destination."
+      ],
+      [
+        "Complete “I give my brother a book.” Ich gebe ___ Bruder ein Buch.",
+        [
+          "meinem",
+          "meinen",
+          "mein"
+        ],
+        0,
+        "The person receiving the book takes the dative."
+      ]
+    ]
+  },
+  {
+    "title": "Health and appointments",
+    "goal": "Explain basic symptoms, book an appointment, and understand simple advice.",
+    "lessons": [
+      {
+        "id": "symptoms",
+        "title": "Say how you feel",
+        "rule": "Use Mir geht es … for how you feel generally. To name a common symptom, use Ich habe plus the symptom. Learn Kopfschmerzen for a headache, Bauchschmerzen for a stomach ache, and Fieber for a fever.",
+        "examples": [
+          [
+            "Mir geht es nicht gut.",
+            "I don’t feel well."
+          ],
+          [
+            "Ich habe seit gestern Kopfschmerzen.",
+            "I’ve had a headache since yesterday."
+          ]
+        ],
+        "practice": [
+          [
+            "Which phrase means “I have a fever”?",
+            [
+              "Ich habe Bauchschmerzen.",
+              "Ich habe Fieber.",
+              "Mir geht es gut."
+            ],
+            1,
+            "Fieber means fever."
+          ],
+          [
+            "Complete “I don’t feel well.” ___ geht es nicht gut.",
+            [
+              "Ich",
+              "Mich",
+              "Mir"
+            ],
+            2,
+            "Mir geht es … is the expression for how you feel."
+          ]
+        ]
+      },
+      {
+        "id": "make-an-appointment",
+        "title": "Make or change an appointment",
+        "rule": "Use Ich möchte einen Termin vereinbaren to request an appointment. Passt Ihnen Montag um zehn Uhr? asks if the time works. To change an appointment, use Ich möchte den Termin verschieben.",
+        "examples": [
+          [
+            "Ich möchte einen Termin vereinbaren.",
+            "I’d like to make an appointment."
+          ],
+          [
+            "Ja, Montag um zehn passt mir.",
+            "Yes, Monday at ten works for me."
+          ]
+        ],
+        "practice": [
+          [
+            "Which request asks to reschedule?",
+            [
+              "Ich möchte den Termin verschieben.",
+              "Ich möchte einen Tee bestellen.",
+              "Ich habe heute frei."
+            ],
+            0,
+            "Einen Termin verschieben means to move an appointment to another time."
+          ],
+          [
+            "How can you say a time works for you?",
+            [
+              "Ich habe Fieber.",
+              "Das passt mir.",
+              "Wann beginnt der Film?"
+            ],
+            1,
+            "Das passt mir means “That works for me.”"
+          ]
+        ]
+      },
+      {
+        "id": "permission-and-advice",
+        "title": "Understand dürfen, sollen, and instructions",
+        "rule": "Dürfen expresses permission and sollen expresses what someone asks or advises you to do. With Sie, use Sie dürfen or Sie sollen and put the other verb at the end. A polite instruction can also start with the verb, as in Warten Sie bitte.",
+        "examples": [
+          [
+            "Sie dürfen hier warten.",
+            "You may wait here."
+          ],
+          [
+            "Sie sollen den Termin bestätigen.",
+            "You should confirm the appointment."
+          ],
+          [
+            "Warten Sie bitte hier.",
+            "Please wait here."
+          ]
+        ],
+        "practice": [
+          [
+            "Which sentence grants permission to sit here?",
+            [
+              "Sie sollen hier sitzen.",
+              "Sitzen Sie bitte hier.",
+              "Sie dürfen hier sitzen."
+            ],
+            2,
+            "Dürfen gives permission."
+          ],
+          [
+            "What does Rufen Sie bitte an mean?",
+            [
+              "Please call.",
+              "Please wait.",
+              "Please come in."
+            ],
+            0,
+            "Anrufen is “to call.” The prefix an goes at the end in this instruction."
+          ]
+        ]
+      }
+    ],
+    "task": "Imagine you’re calling a doctor’s office. Say how you feel, ask for an appointment, and confirm the time.",
+    "review": [
+      [
+        "Say “I have a stomach ache.”",
+        [
+          "Ich habe Bauchschmerzen.",
+          "Ich habe Kopfschmerzen.",
+          "Ich habe keinen Termin."
+        ],
+        0,
+        "Bauchschmerzen means stomach ache."
+      ],
+      [
+        "What does Passt Ihnen Dienstag? ask?",
+        [
+          "Whether Tuesday works for you.",
+          "Whether you’re feeling better.",
+          "Whether the appointment is today."
+        ],
+        0,
+        "Passt asks if the suggested day is convenient."
+      ],
+      [
+        "Which phrase says you should call?",
+        [
+          "Sie dürfen anrufen.",
+          "Sie sollen anrufen.",
+          "Sie rufen an."
+        ],
+        1,
+        "Sollen expresses what someone advises or expects."
+      ]
+    ]
+  },
+  {
+    "title": "What did you do yesterday?",
+    "goal": "Use common past forms to talk about a weekend or a trip.",
+    "lessons": [
+      {
+        "id": "perfekt-with-haben",
+        "title": "Use the Perfekt with haben",
+        "rule": "In everyday speech, use the Perfekt for many past activities. Put the conjugated form of haben near the start and the past participle at the end. Many regular participles use ge- and -t, as in gemacht. Learn common irregular forms such as gegessen separately.",
+        "examples": [
+          [
+            "Ich habe gestern Pizza gegessen.",
+            "I ate pizza yesterday."
+          ],
+          [
+            "Am Samstag haben wir Hausaufgaben gemacht.",
+            "We did homework on Saturday."
+          ]
+        ],
+        "practice": [
+          [
+            "Choose “I bought bread yesterday.”",
+            [
+              "Ich gestern habe Brot kaufen.",
+              "Ich habe gestern Brot gekauft.",
+              "Ich bin gestern Brot gekauft."
+            ],
+            1,
+            "Kaufen forms its Perfekt with haben and gekauft."
+          ],
+          [
+            "What is the participle of essen?",
+            [
+              "geessen",
+              "esst",
+              "gegessen"
+            ],
+            2,
+            "Essen has the irregular participle gegessen."
+          ]
+        ]
+      },
+      {
+        "id": "perfekt-with-sein",
+        "title": "Use the Perfekt with sein",
+        "rule": "Use sein with common verbs of travel or movement such as gehen, kommen, and fahren when you’re saying where someone went. Bleiben also takes sein. Learn these as pairs: ist gegangen, ist gekommen, ist gefahren, ist geblieben.",
+        "examples": [
+          [
+            "Wir sind nach Bonn gefahren.",
+            "We went to Bonn."
+          ],
+          [
+            "Ich bin zu Hause geblieben.",
+            "I stayed at home."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete “She went home.” Sie ___ nach Hause gegangen.",
+            [
+              "ist",
+              "hat",
+              "sind"
+            ],
+            0,
+            "Use ist with sie for the Perfekt of gehen."
+          ],
+          [
+            "Which sentence means “I came at eight”?",
+            [
+              "Ich habe um acht gekommen.",
+              "Ich komme um acht.",
+              "Ich bin um acht gekommen."
+            ],
+            2,
+            "Kommen takes sein in the Perfekt."
+          ]
+        ]
+      },
+      {
+        "id": "war-and-hatte",
+        "title": "Talk about the past with war and hatte",
+        "rule": "War is a past form of sein and hatte is a past form of haben. These short forms are common in conversation. Use ich war or hatte, du warst or hattest, and wir waren or hatten.",
+        "examples": [
+          [
+            "Gestern war ich müde.",
+            "I was tired yesterday."
+          ],
+          [
+            "Am Sonntag hatten wir Besuch.",
+            "We had visitors on Sunday."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete “I was at home yesterday.” Ich ___ gestern zu Hause.",
+            [
+              "bin",
+              "hatte",
+              "war"
+            ],
+            2,
+            "Use ich war for “I was.”"
+          ],
+          [
+            "Complete “We had time.” Wir ___ Zeit.",
+            [
+              "hatten",
+              "waren",
+              "hatte"
+            ],
+            0,
+            "Use wir hatten for “we had.”"
+          ]
+        ]
+      }
+    ],
+    "task": "Tell someone three things about your weekend. Use one Perfekt sentence with haben, one with sein, and one sentence with war or hatte.",
+    "review": [
+      [
+        "Choose “We played football.”",
+        [
+          "Wir sind Fußball gespielt.",
+          "Wir haben Fußball gespielt.",
+          "Wir haben Fußball spielen."
+        ],
+        1,
+        "Spielen uses haben plus the participle gespielt."
+      ],
+      [
+        "Complete the sentence. Ben ___ nach Berlin gefahren.",
+        [
+          "ist",
+          "hat",
+          "sind"
+        ],
+        0,
+        "Travelling to a destination with fahren uses sein here."
+      ],
+      [
+        "Choose “Yesterday I had no time.”",
+        [
+          "Gestern habe ich keine Zeit.",
+          "Gestern war ich keine Zeit.",
+          "Gestern hatte ich keine Zeit."
+        ],
+        2,
+        "Hatte is the past form of haben with ich."
+      ]
+    ]
+  },
+  {
+    "title": "A1 review",
+    "goal": "Bring together reading, listening, writing, and speaking.",
+    "lessons": [
+      {
+        "id": "review-reading",
+        "title": "Read a short notice",
+        "rule": "Look at the question first, then scan the notice for dates, times, places, and negatives. Geschlossen means “closed.” For a form, Vorname asks for your first name, Nachname for your last name, and Geburtsdatum for your date of birth.",
+        "examples": [
+          [
+            "Bibliothek: Montag geschlossen. Dienstag bis Freitag: 10–18 Uhr.",
+            "Library: Closed Monday. Tuesday to Friday, 10 a.m. to 6 p.m."
+          ],
+          [
+            "Kursanmeldung: Vorname, Nachname, Geburtsdatum.",
+            "Course registration: First name, last name, date of birth."
+          ]
+        ],
+        "practice": [
+          [
+            "On which day is the library closed?",
+            [
+              "Dienstag",
+              "Montag",
+              "Freitag"
+            ],
+            1,
+            "Montag is followed by geschlossen."
+          ],
+          [
+            "Which field is for your family name?",
+            [
+              "Nachname",
+              "Vorname",
+              "Geburtsdatum"
+            ],
+            0,
+            "Nachname is the family name or surname."
+          ]
+        ]
+      },
+      {
+        "id": "review-listening",
+        "title": "Listen for time and place",
+        "rule": "Listen for words you expect to hear. Um introduces the time. Gleis is the platform or track at a railway station. Play the announcement once for the main idea, then again for the details.",
+        "examples": [],
+        "practice": [
+          [
+            "When does the train leave?",
+            [
+              "13:20",
+              "14:30",
+              "14:20"
+            ],
+            2,
+            "Vierzehn Uhr zwanzig means 14:20."
+          ],
+          [
+            "Which platform is announced?",
+            [
+              "Gleis drei",
+              "Gleis zwei",
+              "Gleis vier"
+            ],
+            0,
+            "The announcement ends with von Gleis drei."
+          ]
+        ],
+        "audio": "Achtung. Der Zug nach Bonn fährt heute um vierzehn Uhr zwanzig von Gleis drei."
+      },
+      {
+        "id": "review-writing",
+        "title": "Write a short message",
+        "rule": "Start with a greeting. Cover each point the prompt asks for in a short sentence, then close with your name. To move a meeting, say when you can’t come and suggest a different time.",
+        "examples": [
+          [
+            "Hallo Mia, ich kann am Montag nicht kommen. Hast du am Dienstag um fünf Uhr Zeit? Viele Grüße, Alex",
+            "Hi Mia, I can’t come on Monday. Are you free at five on Tuesday? Best wishes, Alex."
+          ],
+          [
+            "Ich wohne in Bonn. Meine Telefonnummer ist 123456.",
+            "I live in Bonn. My phone number is 123456."
+          ]
+        ],
+        "practice": [
+          [
+            "Which sentence suggests another time?",
+            [
+              "Ich habe gestern gearbeitet.",
+              "Hast du am Dienstag um fünf Uhr Zeit?",
+              "Ich komme aus Bonn."
+            ],
+            1,
+            "The question offers Tuesday at five as an alternative."
+          ],
+          [
+            "Which line works as a friendly closing?",
+            [
+              "Gleis drei",
+              "Guten Morgen",
+              "Viele Grüße, Alex"
+            ],
+            2,
+            "Viele Grüße and your name close a friendly message."
+          ]
+        ]
+      },
+      {
+        "id": "review-speaking",
+        "title": "Introduce yourself and ask a question",
+        "rule": "Give short answers about your name, where you live, and what you like doing. To ask about a topic, use a complete question. Add bitte when you ask someone to give you something.",
+        "examples": [
+          [
+            "Ich heiße Nora. Ich wohne in Bonn. Ich koche gern.",
+            "My name’s Nora. I live in Bonn. I like cooking."
+          ],
+          [
+            "Haben Sie am Samstag Zeit?",
+            "Are you free on Saturday? (polite)"
+          ],
+          [
+            "Kannst du mir bitte das Salz geben?",
+            "Could you please pass me the salt?"
+          ]
+        ],
+        "practice": [
+          [
+            "Which answer fits Was machst du gern?",
+            [
+              "Ich wohne in Bonn.",
+              "Ich koche gern.",
+              "Ich heiße Nora."
+            ],
+            1,
+            "The question asks what you like doing, so name an activity."
+          ],
+          [
+            "Which sentence is a polite request for water?",
+            [
+              "Ich trinke oft Wasser.",
+              "Woher kommt das Wasser?",
+              "Kann ich bitte ein Wasser haben?"
+            ],
+            2,
+            "Kann ich … haben? plus bitte makes a polite request in this context."
+          ]
+        ]
+      }
+    ],
+    "task": "Write a short message to a friend. Say you can’t meet on Friday and suggest a new day and time. Then introduce yourself aloud and ask a partner a question about their hobbies.",
+    "review": [
+      [
+        "Pick a correct W-question.",
+        [
+          "Wo du wohnst?",
+          "Wo wohnst du?",
+          "Wohnst wo du?"
+        ],
+        1,
+        "Put wo first, followed by wohnst and du."
+      ],
+      [
+        "Complete the sentence. Ich möchte ___ Kaffee.",
+        [
+          "eine",
+          "ein",
+          "einen"
+        ],
+        2,
+        "Kaffee is masculine and is the direct object, so use einen."
+      ],
+      [
+        "Choose “Today I have to work.”",
+        [
+          "Heute muss ich arbeiten.",
+          "Heute ich muss arbeiten.",
+          "Heute muss ich arbeite."
+        ],
+        0,
+        "Muss follows heute, and the infinitive arbeiten comes last."
+      ],
+      [
+        "Choose “I went to the station.”",
+        [
+          "Ich habe zum Bahnhof gegangen.",
+          "Ich bin zum Bahnhof gegangen.",
+          "Ich bin zum Bahnhof gehen."
+        ],
+        1,
+        "Use bin and the participle gegangen for the Perfekt of gehen."
+      ]
+    ]
   }
 ]

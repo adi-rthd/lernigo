@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import units from '../data/a1-course.json';
+import { speakGerman } from '../germanSpeech.js';
 import { readLocal, writeLocal } from '../useAccount.js';
 
 const course = units.flatMap((unit, index) => [
@@ -7,8 +8,22 @@ const course = units.flatMap((unit, index) => [
   { id: 'review-' + (index + 1), title: 'Unit practice', practice: unit.review, task: unit.task },
 ].map(lesson => ({ ...lesson, unit, number: index + 1 })));
 
+function progressKey(learner) {
+  return 'lernigo:learn-a1:' + learner;
+}
+
+export function HomeA1({ learner }) {
+  return (
+    <section className="a1-home" aria-labelledby="home-a1-title">
+      <h2 id="home-a1-title"><a href="#learn">Learn A1</a></h2>
+      <p>Learn everyday German with short explanations, examples, and practice.</p>
+      <CourseProgress results={readResults(progressKey(learner))} />
+    </section>
+  );
+}
+
 export default function LearnA1({ lessonId, learner }) {
-  const storageKey = 'lernigo:learn-a1:' + learner;
+  const storageKey = progressKey(learner);
   const [results, setResults] = useState(() => readResults(storageKey));
   const [storageError, setStorageError] = useState(false);
   const [topicsOpen, setTopicsOpen] = useState(false);
@@ -16,8 +31,6 @@ export default function LearnA1({ lessonId, learner }) {
   const index = course.findIndex(lesson => lesson.id === lessonId);
   const lesson = course[index];
   const next = course[index + 1];
-  const resume = course.find(item => !Object.hasOwn(results, item.id));
-  const completed = course.filter(item => Object.hasOwn(results, item.id)).length;
 
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
@@ -72,25 +85,20 @@ export default function LearnA1({ lessonId, learner }) {
           {lesson.rule && <div className="panel a1-card">
             <h2>The rule</h2>
             <p>{lesson.rule}</p>
-            <dl className="a1-examples">
+            {lesson.examples.length > 0 && <dl className="a1-examples">
               {lesson.examples.map(([german, english]) => <div key={german}>
                 <dt lang="de">{german}</dt><dd>{english}</dd>
               </div>)}
-            </dl>
+            </dl>}
+            {lesson.audio && <Listening key={lesson.id} text={lesson.audio} />}
           </div>}
           {lesson.task && <div className="panel a1-card">
-            <h2>Try it aloud</h2><p>{lesson.task}</p>
+            <h2>Try it yourself</h2><p>{lesson.task}</p>
           </div>}
           <Practice key={lesson.id} questions={lesson.practice} onFinish={finish} next={next} />
           {storageError && <p role="status">This browser couldn’t save your progress.</p>}
         </> : <>
-          <div className="panel a1-overview">
-            <div><strong>{completed} of {course.length} activities finished</strong>
-              <progress value={completed} max={course.length} aria-label="Course progress" />
-              <p>Progress is saved in this browser.</p>
-            </div>
-            {resume && <a className="primary" href={'#learn/' + resume.id}>{completed ? 'Continue learning' : 'Start Unit 1'}</a>}
-          </div>
+          <CourseProgress results={results} />
           <div className="panel a1-card">
             <h2>What you’ll learn</h2>
             <dl className="a1-examples">
@@ -102,6 +110,43 @@ export default function LearnA1({ lessonId, learner }) {
         </>}
       </div>
     </section>
+  );
+}
+
+function CourseProgress({ results }) {
+  const resume = course.find(item => !Object.hasOwn(results, item.id));
+  const completed = course.filter(item => Object.hasOwn(results, item.id)).length;
+
+  return (
+    <div className="panel a1-overview">
+      <div>
+        <strong>{completed} of {course.length} activities finished</strong>
+        <progress value={completed} max={course.length} aria-label="Course progress" />
+        <p>Progress is saved in this browser.</p>
+      </div>
+      <a className="primary" href={resume ? '#learn/' + resume.id : '#learn'}>
+        {resume ? (completed ? 'Continue learning' : 'Start Unit 1') : 'Review course'}
+      </a>
+    </div>
+  );
+}
+
+function Listening({ text }) {
+  const [error, setError] = useState('');
+
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
+  return (
+    <div className="a1-listening">
+      <button className="outline" type="button" onClick={() => speakGerman(text, setError)}>
+        Play announcement
+      </button>
+      {error && <p role="status">{error} You can use the transcript below.</p>}
+      <details>
+        <summary>Show transcript</summary>
+        <p lang="de">{text}</p>
+      </details>
+    </div>
   );
 }
 
