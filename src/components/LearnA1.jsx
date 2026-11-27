@@ -16,9 +16,12 @@ function progressKey(learner) {
 export function HomeA1({ learner }) {
   return (
     <section className="a1-home" aria-labelledby="home-a1-title">
-      <h2 id="home-a1-title"><a href="#learn">Learn A1</a></h2>
-      <p>Learn everyday German with short explanations, examples, and practice.</p>
-      <CourseProgress results={readResults(progressKey(learner))} />
+      <CourseProgress results={readResults(progressKey(learner))}>
+        <header className="a1-overview-heading">
+          <h2 id="home-a1-title"><a href="#learn">Learn A1</a></h2>
+          <p>Learn everyday German with short explanations, examples, and practice.</p>
+        </header>
+      </CourseProgress>
     </section>
   );
 }
@@ -135,12 +138,13 @@ export default function LearnA1({ lessonId, learner }) {
   );
 }
 
-function CourseProgress({ results }) {
+function CourseProgress({ results, children }) {
   const resume = course.find(item => !Object.hasOwn(results, item.id));
   const completed = course.filter(item => Object.hasOwn(results, item.id)).length;
 
   return (
     <div className="panel a1-overview">
+      {children}
       <div>
         <strong>{completed} of {course.length} activities finished</strong>
         <progress value={completed} max={course.length} aria-label="Course progress" />
