@@ -182,7 +182,7 @@ function readResults(storageKey) {
 function Practice({ questions, onFinish, next }) {
   const [answers, setAnswers] = useState([]);
   const [choice, setChoice] = useState(null);
-  const [checked, setChecked] = useState(false);
+  const checked = choice !== null;
   const practiceHeading = useRef(null);
   const actionButton = useRef(null);
   const number = answers.length;
@@ -193,7 +193,6 @@ function Practice({ questions, onFinish, next }) {
     const updated = [...answers, choice];
     setAnswers(updated);
     setChoice(null);
-    setChecked(false);
     if (updated.length === questions.length) {
       onFinish(score + Number(choice === question[2]));
     }
@@ -224,25 +223,21 @@ function Practice({ questions, onFinish, next }) {
   const [prompt, options, correct, explanation] = question;
   return <div className="panel a1-card">
     <h2 ref={practiceHeading} tabIndex={-1}>Practice question {number + 1} of {questions.length}</h2>
-    <form onSubmit={event => {
-      event.preventDefault();
-      if (checked) continuePractice();
-      else if (choice !== null) setChecked(true);
-    }}>
-      <fieldset className="a1-choices" disabled={checked}>
-        <legend>{prompt}</legend>
-        {options.map((option, i) => <label key={option} className="a1-choice"
-          data-result={checked && (i === correct ? 'correct' : i === choice ? 'incorrect' : undefined) || undefined}>
-          <input type="radio" name="a1-answer" checked={choice === i} onChange={() => setChoice(i)} />
-          <span lang="de">{option}</span>
-        </label>)}
-      </fieldset>
-      <div className="a1-feedback" aria-live="polite">
-        {checked && <p><strong>{choice === correct ? 'Correct. ' : 'Not quite. '}</strong>{explanation}</p>}
-      </div>
-      <button ref={actionButton} type="submit" className="primary" disabled={choice === null}>
-        {checked ? (number + 1 === questions.length ? 'See result' : 'Next question') : 'Check answer'}
+    <fieldset className="a1-choices" disabled={checked}>
+      <legend>{prompt}</legend>
+      {options.map((option, i) => <button key={option} type="button" className="a1-choice" lang="de"
+        data-result={checked ? (i === correct ? 'correct' : i === choice ? 'incorrect' : undefined) : undefined}
+        onClick={() => setChoice(i)}>
+        {option}
+      </button>)}
+    </fieldset>
+    <div className="a1-feedback" aria-live="polite">
+      {checked && <p><strong>{choice === correct ? 'Correct. ' : 'Not quite. '}</strong>{explanation}</p>}
+    </div>
+    {checked && <div className="a1-actions">
+      <button ref={actionButton} type="button" className="primary" onClick={continuePractice}>
+        {number + 1 === questions.length ? 'See result' : 'Next question'}
       </button>
-    </form>
+    </div>}
   </div>;
 }

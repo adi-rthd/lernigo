@@ -577,29 +577,17 @@ dialog::backdrop { background: var(--backdrop); }
 .a1-choices { display: grid; gap: 8px; border: 0; margin: 12px 0; min-width: 0; }
 .a1-choices legend { margin-bottom: 10px; }
 .a1-choice {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
   min-height: 48px;
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-.a1-choice input {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--forest);
-}
-.a1-choices:not(:disabled) .a1-choice { cursor: pointer; }
 .a1-choices:not(:disabled) .a1-choice:hover { border-color: var(--sage); }
-.a1-choices:not(:disabled) .a1-choice:has(input:checked) {
-  background: var(--tint);
-  border-color: var(--correct-line);
-}
 .a1-choice[data-result='correct'] { background: var(--tint); border-color: var(--correct-line); }
 .a1-choice[data-result='incorrect'] { background: var(--wrong-bg); border-color: var(--wrong-line); }
 .a1-feedback p { margin-block: 0 12px; }
@@ -608,6 +596,7 @@ dialog::backdrop { background: var(--backdrop); }
 .a1-listening details p { margin-top: 5px; }
 .a1-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .a1-card .a1-actions { margin-top: 14px; }
+.a1-actions > .primary { margin-inline-start: auto; }
 .game-article-help { font-size: .9rem; text-align: left; }
 .game-article-help summary { cursor: pointer; width: fit-content; padding: 7px 0; font-weight: 700; }
 .game-article-help strong[lang='de'] { display: inline; font-size: inherit; }
