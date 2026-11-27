@@ -333,6 +333,12 @@ function RoundResults({ room, prompt, resultsError, roundGuesses, scores, uid, l
         <p>Correct answer</p>
         <strong lang="de">{prompt.word}</strong>
         <span>{prompt.answers.replaceAll(' | ', ' / ')}</span>
+        {prompt.choices && (outcome === 'incorrect' || outcome === 'missed') &&
+          <details className="game-article-help">
+            <summary>Why?</summary>
+            <p>Learn this noun with its article. <strong lang="de">{prompt.answers}</strong> marks its grammatical gender here.</p>
+            <a href="#learn/noun-articles" target="_blank" rel="noopener">Review noun articles (opens in a new tab)</a>
+          </details>}
       </div>}
 
       {resultsError ? <p role="status">{resultsError} <button className="text-button" type="button" onClick={onRetry}>Retry scores</button></p>

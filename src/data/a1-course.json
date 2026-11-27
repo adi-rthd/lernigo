@@ -1,0 +1,717 @@
+[
+  {
+    "title": "Hello, I’m Adi",
+    "goal": "Introduce yourself and spell your name.",
+    "lessons": [
+      {
+        "id": "greetings",
+        "title": "Greetings and goodbyes",
+        "rule": "Use Hallo as a general greeting. Guten Morgen is for the morning, Guten Tag is a polite daytime greeting, and Guten Abend is for the evening. Say Tschüss in casual settings or Auf Wiedersehen when you want a polite goodbye.",
+        "examples": [
+          [
+            "Guten Abend, Frau Klein.",
+            "Good evening, Ms Klein."
+          ],
+          [
+            "Tschüss, Ben!",
+            "Bye, Ben!"
+          ]
+        ],
+        "practice": [
+          [
+            "Greet someone politely in the morning.",
+            [
+              "Guten Morgen!",
+              "Guten Abend!",
+              "Auf Wiedersehen!"
+            ],
+            0,
+            "Guten Morgen is the morning greeting."
+          ],
+          [
+            "Say goodbye politely.",
+            [
+              "Hallo!",
+              "Auf Wiedersehen!",
+              "Guten Tag!"
+            ],
+            1,
+            "Auf Wiedersehen is a polite goodbye."
+          ]
+        ]
+      },
+      {
+        "id": "introductions",
+        "title": "Say your name and where you’re from",
+        "rule": "Use Ich heiße or Ich bin before your name. Use Ich komme aus before the name of a place you’re from. Many country names, including Indien and Deutschland, appear without an article.",
+        "examples": [
+          [
+            "Ich heiße Adi.",
+            "My name is Adi."
+          ],
+          [
+            "Ich komme aus Indien.",
+            "I’m from India."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the introduction. Ich ___ Eva.",
+            [
+              "bist",
+              "bin",
+              "sind"
+            ],
+            1,
+            "Use bin with ich."
+          ],
+          [
+            "Say “I’m from Berlin.”",
+            [
+              "Ich bin Berlin.",
+              "Ich heiße Berlin.",
+              "Ich komme aus Berlin."
+            ],
+            2,
+            "Use Ich komme aus followed by the place."
+          ]
+        ]
+      },
+      {
+        "id": "du-sie",
+        "title": "Speak casually or politely",
+        "rule": "Use du with friends, family and other people you address casually. Use Sie in formal situations. Capitalize polite Sie. The verb changes too. With sein, use du bist or Sie sind.",
+        "examples": [
+          [
+            "Du bist Paul.",
+            "You’re Paul. (casual)"
+          ],
+          [
+            "Sie sind Frau Weber.",
+            "You’re Ms Weber. (polite)"
+          ]
+        ],
+        "practice": [
+          [
+            "Which pronoun suits a formal first meeting?",
+            [
+              "ich",
+              "du",
+              "Sie"
+            ],
+            2,
+            "Sie is the formal way to address someone."
+          ],
+          [
+            "Complete the casual sentence. Du ___ Mia.",
+            [
+              "bist",
+              "sind",
+              "bin"
+            ],
+            0,
+            "The form of sein with du is bist."
+          ]
+        ]
+      },
+      {
+        "id": "spelling",
+        "title": "Spell your name",
+        "rule": "Spell a name by saying each letter. Some German letter names sound different from English. J sounds roughly like ‘yot’, W like ‘veh’ and Z like ‘tsett’. Ä, Ö and Ü are umlaut letters. ß is called Eszett.",
+        "examples": [
+          [
+            "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z",
+            "The German alphabet in order."
+          ],
+          [
+            "A–D–I",
+            "Adi, spelled one letter at a time."
+          ],
+          [
+            "J–A–N",
+            "Jan, starting with J (‘yot’)."
+          ]
+        ],
+        "practice": [
+          [
+            "Which letter starts Jan?",
+            [
+              "G",
+              "J",
+              "Y"
+            ],
+            1,
+            "Jan starts with J, pronounced roughly ‘yot’ as a letter name."
+          ],
+          [
+            "What is the German name of ß?",
+            [
+              "Eszett",
+              "Umlaut",
+              "Doppelpunkt"
+            ],
+            0,
+            "ß is called Eszett."
+          ]
+        ]
+      }
+    ],
+    "task": "Greet someone, say your name and where you’re from, and spell your name aloud.",
+    "review": [
+      [
+        "Complete the introduction. Ich ___ Leila.",
+        [
+          "heißen",
+          "heiße",
+          "heißt"
+        ],
+        1,
+        "Use ich heiße to give your name."
+      ],
+      [
+        "Complete the polite statement. Sie ___ Herr Koch.",
+        [
+          "sind",
+          "bin",
+          "bist"
+        ],
+        0,
+        "Use sind with polite Sie."
+      ],
+      [
+        "How would you finish a casual chat?",
+        [
+          "Guten Morgen!",
+          "Ich komme aus Indien.",
+          "Tschüss!"
+        ],
+        2,
+        "Tschüss is a casual goodbye."
+      ]
+    ]
+  },
+  {
+    "title": "Ask and answer basic questions",
+    "goal": "Ask where someone lives, what they speak, and for their number.",
+    "lessons": [
+      {
+        "id": "present-tense",
+        "title": "Change the verb to match the person",
+        "rule": "For regular verbs like wohnen, remove -en and add an ending: ich -e, du -st, er/sie/es -t, wir -en, ihr -t, sie/Sie -en. A few common verbs, such as sprechen, also change their stem in some forms. Learn du sprichst and er/sie spricht as examples.",
+        "examples": [
+          [
+            "Ich wohne in Köln.",
+            "I live in Cologne."
+          ],
+          [
+            "Du sprichst Deutsch.",
+            "You speak German."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the sentence. Wir ___ in Bonn.",
+            [
+              "wohnt",
+              "wohnen",
+              "wohnst"
+            ],
+            1,
+            "Use -en with wir."
+          ],
+          [
+            "Complete the sentence. Du ___ in Berlin.",
+            [
+              "wohnst",
+              "wohne",
+              "wohnen"
+            ],
+            0,
+            "Use -st with du for wohnen."
+          ]
+        ]
+      },
+      {
+        "id": "w-questions",
+        "title": "Put a W-question in order",
+        "rule": "In the questions here, start with the question word, put the conjugated verb next, then the subject. Wo asks where someone is or lives, woher asks where they come from, was asks what, and wie asks how. A question phrase such as Welche Sprachen stays together before the verb.",
+        "examples": [
+          [
+            "Wo wohnst du?",
+            "Where do you live?"
+          ],
+          [
+            "Welche Sprachen sprechen Sie?",
+            "Which languages do you speak? (polite)"
+          ]
+        ],
+        "practice": [
+          [
+            "Build the question “Where do you live?”",
+            [
+              "Wo du wohnst?",
+              "Wohnst wo du?",
+              "Wo wohnst du?"
+            ],
+            2,
+            "Put wohnst after wo and du after the verb."
+          ],
+          [
+            "Ask where someone comes from.",
+            [
+              "Woher kommst du?",
+              "Wie kommst du?",
+              "Was kommst du?"
+            ],
+            0,
+            "Woher asks where someone comes from."
+          ]
+        ]
+      },
+      {
+        "id": "yes-no-questions",
+        "title": "Ask a yes/no question",
+        "rule": "Start a yes/no question with the conjugated verb, then put the subject next. Answer with Ja or Nein and add a short sentence if you want to give more information.",
+        "examples": [
+          [
+            "Wohnst du in Bonn?",
+            "Do you live in Bonn?"
+          ],
+          [
+            "Ja, ich wohne in Bonn.",
+            "Yes, I live in Bonn."
+          ]
+        ],
+        "practice": [
+          [
+            "Turn Sie sprechen Deutsch into a polite question.",
+            [
+              "Sprechen Sie Deutsch?",
+              "Sie Deutsch sprechen?",
+              "Was Sie sprechen?"
+            ],
+            0,
+            "The verb sprechen goes first in this yes/no question."
+          ],
+          [
+            "Which question can be answered with ja or nein?",
+            [
+              "Wo wohnen Sie?",
+              "Kommen Sie aus Köln?",
+              "Welche Sprachen sprechen Sie?"
+            ],
+            1,
+            "Kommen Sie aus Köln? asks whether a statement is true."
+          ]
+        ]
+      },
+      {
+        "id": "phone-numbers",
+        "title": "Ask for a phone number",
+        "rule": "Ask Wie ist deine Telefonnummer? casually or Wie ist Ihre Telefonnummer? politely. You can give a number one digit at a time: null, eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun.",
+        "examples": [
+          [
+            "Wie ist Ihre Telefonnummer?",
+            "What’s your phone number? (polite)"
+          ],
+          [
+            "Null, eins, sieben, sechs.",
+            "Zero, one, seven, six."
+          ]
+        ],
+        "practice": [
+          [
+            "Pick the digits for null, sechs, zwei.",
+            [
+              "026",
+              "062",
+              "602"
+            ],
+            1,
+            "Null is 0, sechs is 6, and zwei is 2."
+          ],
+          [
+            "Which question uses the polite form?",
+            [
+              "Wie heißt du?",
+              "Wie ist deine Telefonnummer?",
+              "Wie ist Ihre Telefonnummer?"
+            ],
+            2,
+            "Ihre is the polite form here."
+          ]
+        ]
+      }
+    ],
+    "task": "Ask a partner where they live and which languages they speak. Ask for a made-up phone number and repeat it back.",
+    "review": [
+      [
+        "Ask “What’s your name?” casually.",
+        [
+          "Wie heißt du?",
+          "Wie du heißt?",
+          "Wo heißt du?"
+        ],
+        0,
+        "Use wie, then the verb heißt, then du."
+      ],
+      [
+        "Complete the sentence. Ihr ___ in Hamburg.",
+        [
+          "wohnen",
+          "wohnst",
+          "wohnt"
+        ],
+        2,
+        "Use -t with ihr."
+      ],
+      [
+        "Which is a yes/no question?",
+        [
+          "Woher kommst du?",
+          "Sprichst du Englisch?",
+          "Wie ist deine Telefonnummer?"
+        ],
+        1,
+        "Sprichst starts the yes/no question."
+      ]
+    ]
+  },
+  {
+    "title": "Family and everyday objects",
+    "goal": "Describe your family and say what you have.",
+    "lessons": [
+      {
+        "id": "noun-articles",
+        "title": "Learn nouns with their articles",
+        "rule": "German nouns have a grammatical gender. In the subject, use der for masculine, die for feminine and das for neuter. For “a,” use ein for masculine and neuter and eine for feminine. Capitalize German nouns and learn the article with the noun.",
+        "examples": [
+          [
+            "Der Stift ist blau.",
+            "The pen is blue."
+          ],
+          [
+            "Das ist eine Tasche.",
+            "That’s a bag."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the sentence for a book. Das ist ___ Buch.",
+            [
+              "eine",
+              "einen",
+              "ein"
+            ],
+            2,
+            "Buch is neuter, so use ein here."
+          ],
+          [
+            "Pick the definite article for Tasche.",
+            [
+              "das",
+              "die",
+              "der"
+            ],
+            1,
+            "Learn the noun as die Tasche."
+          ]
+        ]
+      },
+      {
+        "id": "plurals",
+        "title": "Name more than one thing",
+        "rule": "Learn the plural alongside the singular. Forms vary: Stift becomes Stifte, Tasche becomes Taschen, and Buch becomes Bücher. In the subject, the definite article for a plural noun is die.",
+        "examples": [
+          [
+            "Die Bücher sind neu.",
+            "The books are new."
+          ],
+          [
+            "Zwei Taschen sind hier.",
+            "Two bags are here."
+          ]
+        ],
+        "practice": [
+          [
+            "Pick the plural of der Stift.",
+            [
+              "die Stifte",
+              "die Stiften",
+              "das Stift"
+            ],
+            0,
+            "The plural is die Stifte."
+          ],
+          [
+            "Complete the subject. ___ Bücher sind hier.",
+            [
+              "Der",
+              "Das",
+              "Die"
+            ],
+            2,
+            "Use die as the definite article for this plural subject."
+          ]
+        ]
+      },
+      {
+        "id": "family-and-haben",
+        "title": "Talk about your family and belongings",
+        "rule": "Use mein for “my” and dein for “your” before masculine and neuter subjects. Use meine and deine before feminine or plural subjects. To say “I have,” use ich habe. Learn Ich habe eine Schwester and Ich habe zwei Brüder as complete phrases.",
+        "examples": [
+          [
+            "Meine Schwester heißt Pia.",
+            "My sister’s name is Pia."
+          ],
+          [
+            "Ich habe zwei Brüder.",
+            "I have two brothers."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the subject. ___ Vater heißt Tim.",
+            [
+              "Meine",
+              "Mein",
+              "Meinen"
+            ],
+            1,
+            "Vater is masculine and is the subject, so use mein."
+          ],
+          [
+            "Complete the sentence. Du ___ zwei Schwestern.",
+            [
+              "habe",
+              "hat",
+              "hast"
+            ],
+            2,
+            "Use hast with du."
+          ]
+        ]
+      },
+      {
+        "id": "negation",
+        "title": "Say “no” or “not” in a sentence",
+        "rule": "Use kein to negate a noun that would take ein or have no article. The ending follows the noun’s gender, number and case. Use nicht to negate a description or an activity, as in nicht teuer or Ich arbeite heute nicht.",
+        "examples": [
+          [
+            "Ich habe keine Tasche.",
+            "I don’t have a bag."
+          ],
+          [
+            "Das Buch ist nicht teuer.",
+            "The book isn’t expensive."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the sentence. Ich habe ___ Schwester.",
+            [
+              "keine",
+              "nicht",
+              "kein"
+            ],
+            0,
+            "Use keine for the feminine noun Schwester here."
+          ],
+          [
+            "Complete the sentence. Das ist ___ teuer.",
+            [
+              "kein",
+              "keine",
+              "nicht"
+            ],
+            2,
+            "Use nicht to negate the adjective teuer."
+          ]
+        ]
+      }
+    ],
+    "task": "Name two family members and describe two things you have or don’t have.",
+    "review": [
+      [
+        "Complete the sentence. ___ Mutter heißt Sara.",
+        [
+          "Mein",
+          "Meine",
+          "Meinen"
+        ],
+        1,
+        "Mutter is feminine and is the subject, so use meine."
+      ],
+      [
+        "Pick the plural of das Buch.",
+        [
+          "die Buchen",
+          "die Buchs",
+          "die Bücher"
+        ],
+        2,
+        "Buch changes to Bücher in the plural."
+      ],
+      [
+        "Say “I don’t have a bicycle.”",
+        [
+          "Ich habe kein Fahrrad.",
+          "Ich habe keine Fahrrad.",
+          "Ich habe nicht Fahrrad."
+        ],
+        0,
+        "Fahrrad is neuter, so use kein for this direct object."
+      ]
+    ]
+  },
+  {
+    "title": "Food and drink",
+    "goal": "Order a meal and ask for the bill.",
+    "lessons": [
+      {
+        "id": "accusative",
+        "title": "Why is it den or einen Kaffee?",
+        "rule": "A direct object in these examples is the thing you drink, eat, or order. For a masculine direct object, der becomes den and ein becomes einen. Feminine and neuter articles keep the same forms shown in Unit 3: die/eine and das/ein. The definite plural stays die.",
+        "examples": [
+          [
+            "Der Kaffee ist heiß. Ich trinke den Kaffee.",
+            "The coffee is hot. I drink the coffee."
+          ],
+          [
+            "Ich möchte einen Tee und eine Suppe.",
+            "I’d like a tea and a soup."
+          ]
+        ],
+        "practice": [
+          [
+            "Complete the order. Ich möchte ___ Kaffee.",
+            [
+              "ein",
+              "einen",
+              "eine"
+            ],
+            1,
+            "Kaffee is masculine and is the direct object here, so use einen."
+          ],
+          [
+            "Complete the sentence. Ich esse ___ Apfel. (the apple)",
+            [
+              "das",
+              "der",
+              "den"
+            ],
+            2,
+            "Apfel is masculine and is the direct object of esse, so use den."
+          ]
+        ]
+      },
+      {
+        "id": "order-politely",
+        "title": "Order politely and ask for the bill",
+        "rule": "Start an order with Ich möchte and name what you want. Add bitte to be polite. You can also say just the item and bitte. When you’re ready to pay, say Die Rechnung, bitte.",
+        "examples": [
+          [
+            "Ich möchte ein Wasser, bitte.",
+            "I’d like a water, please."
+          ],
+          [
+            "Die Rechnung, bitte.",
+            "The bill, please."
+          ]
+        ],
+        "practice": [
+          [
+            "Ask for the bill.",
+            [
+              "Eine Suppe, bitte.",
+              "Die Rechnung, bitte.",
+              "Ich esse Brot."
+            ],
+            1,
+            "Rechnung is the bill in this context."
+          ],
+          [
+            "Order a soup politely.",
+            [
+              "Ich möchte eine Suppe, bitte.",
+              "Ich möchte einen Suppe, bitte.",
+              "Ich heiße Suppe."
+            ],
+            0,
+            "Suppe is feminine, so the order uses eine."
+          ]
+        ]
+      },
+      {
+        "id": "meals",
+        "title": "Talk about what you eat for dinner",
+        "rule": "Zum Frühstück, zum Mittagessen and zum Abendessen mean “for breakfast,” “for lunch” and “for dinner.” Zum is short for zu dem. These expressions tell you the meal, and the verb tells you the tense.",
+        "examples": [
+          [
+            "Ich esse Pizza zum Abendessen.",
+            "I eat pizza for dinner."
+          ],
+          [
+            "Ich trinke Tee zum Frühstück.",
+            "I drink tea for breakfast."
+          ]
+        ],
+        "practice": [
+          [
+            "How do you say “for dinner”?",
+            [
+              "zum Frühstück",
+              "zum Mittagessen",
+              "zum Abendessen"
+            ],
+            2,
+            "Abendessen means dinner."
+          ],
+          [
+            "Say “I eat rice for lunch.”",
+            [
+              "Ich esse Reis zum Mittagessen.",
+              "Ich trinke Reis zum Mittagessen.",
+              "Ich esse Reis zum Frühstück."
+            ],
+            0,
+            "Use esse for ‘eat’ and zum Mittagessen for ‘for lunch.’"
+          ]
+        ]
+      }
+    ],
+    "task": "Order one drink and one dish aloud, then ask for the bill.",
+    "review": [
+      [
+        "Complete the order. Ich möchte ___ Saft. (a juice)",
+        [
+          "eine",
+          "ein",
+          "einen"
+        ],
+        2,
+        "Saft is masculine. Use einen for this direct object."
+      ],
+      [
+        "Complete the sentence. Ich trinke ___ Wasser. (the water)",
+        [
+          "das",
+          "den",
+          "der"
+        ],
+        0,
+        "Wasser is neuter, so das stays das for the direct object."
+      ],
+      [
+        "Say “I drink milk for breakfast.”",
+        [
+          "Ich esse Milch zum Frühstück.",
+          "Ich trinke Milch zum Frühstück.",
+          "Ich trinke Milch zum Mittagessen."
+        ],
+        1,
+        "Milch means milk and zum Frühstück means for breakfast."
+      ]
+    ]
+  }
+]

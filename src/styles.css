@@ -478,4 +478,38 @@ nav a[data-locked]::after { content: " 🔒"; font-size: .64em; }
 
 .home-intro { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .home-intro h1 { margin-bottom: 0; }
-.home-intro > a { flex: 0 0 auto; }
+
+.a1-course { width: min(100%, 740px); margin-inline: auto; }
+.a1-course p { line-height: 1.55; }
+.a1-back { display: inline-block; margin-bottom: 15px; color: var(--forest-deep); text-decoration: underline; }
+.a1-overview, .a1-card { padding: clamp(16px, 4vw, 24px); margin-bottom: 14px; }
+.a1-overview { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.a1-overview progress { display: block; width: 100%; margin: 7px 0; accent-color: var(--forest); }
+.a1-overview p, .a1-card h2 + p { color: var(--muted); }
+.a1-card h2 + p { margin-top: 7px; }
+.a1-units { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)); column-gap: 14px; }
+.a1-lesson-list { padding: 0; margin: 12px 0 0; list-style: none; }
+.a1-lesson-list a { display: flex; gap: 12px; align-items: center; justify-content: space-between; min-height: 44px; padding-block: 7px; border-top: 1px solid var(--line); font-weight: 650; }
+.a1-lesson-list a:hover, .game-article-help a { text-decoration: underline; }
+.a1-lesson-list small { color: var(--muted); white-space: nowrap; }
+.a1-examples { display: grid; gap: 8px; margin: 14px 0 0; }
+.a1-examples > div { padding: 11px 14px; background: var(--tint); border-radius: 8px; line-height: 1.5; }
+.a1-examples dt { font-weight: 700; }
+.a1-examples dd { margin: 0; color: var(--muted); }
+.a1-choices, .a1-choices legend { padding: 0; }
+.a1-choices { display: grid; gap: 8px; border: 0; margin: 12px 0; min-width: 0; }
+.a1-choices legend { margin-bottom: 10px; }
+.a1-choice { display: flex; gap: 9px; align-items: center; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.a1-choice input { accent-color: var(--forest); }
+.a1-choice[data-result='correct'] { background: var(--tint); border-color: var(--correct-line); }
+.a1-choice[data-result='incorrect'] { background: var(--wrong-bg); border-color: var(--wrong-line); }
+.a1-feedback p { margin-block: 0 12px; }
+.a1-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.a1-card .a1-actions { margin-top: 14px; }
+.game-article-help { font-size: .9rem; text-align: left; }
+.game-article-help summary { cursor: pointer; width: fit-content; padding: 7px 0; font-weight: 700; }
+.game-article-help strong[lang='de'] { display: inline; font-size: inherit; }
+.game-article-help p { margin-bottom: 5px; font-weight: 400; }
+@media (max-width: 430px) {
+  .home-intro { flex-wrap: wrap; }
+}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccountDialog, ProfileSettings } from './components/Account.jsx';
 import Challenges from './components/Challenges.jsx';
 import Game from './components/Game.jsx';
+import LearnA1 from './components/LearnA1.jsx';
 import Practice from './components/Practice.jsx';
 import PracticeBanner from './components/PracticeBanner.jsx';
 import Progress from './components/Progress.jsx';
@@ -25,6 +26,7 @@ const lockedTabs = new Set(['leaderboard', 'cheat-sheet']);
 const navigation = [
   ['home', 'Home'],
   ['practice', 'Practice'],
+  ['learn', 'Learn A1'],
   ['read', 'Read'],
   ['game', 'Game'],
   ['progress', 'Progress'],
@@ -35,13 +37,15 @@ const navigation = [
 
 function currentPage() {
   const hash = location.hash.slice(1);
+  if (hash.startsWith('learn/')) return hash;
   return navigation.some(([id]) => id === hash) ? hash : 'home';
 }
 
 export default function App() {
   const account = useAccount();
   const { user, ready, api } = account;
-  const [page, setPage] = useState(currentPage);
+  const [route, setRoute] = useState(currentPage);
+  const [page, lessonId] = route.split('/');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef(null);
   const [theme, setTheme] = useState(() => document.documentElement.dataset.theme ?? 'light');
@@ -59,7 +63,7 @@ export default function App() {
 
   useEffect(() => {
     function navigate() {
-      setPage(currentPage());
+      setRoute(currentPage());
       setMenuOpen(false);
       window.scrollTo(0, 0);
     }
@@ -145,6 +149,7 @@ export default function App() {
           signedIn={!!user} guestRemaining={guestLimit - guestAttempts}
           onSignIn={() => setDialogOpen(true)}
           review={review?.level === level && review.learner === learner ? review : null} onExitReview={() => setReview(null)} />
+        {page === 'learn' && <LearnA1 key={learner} lessonId={lessonId} learner={learner} />}
         {page === 'read' && <Read cards={a1Cards} />}
         {page === 'progress' && <Progress level={level} cards={cards} records={records}
           source={user ? account.progressMessage : 'Guest progress on this browser'}
@@ -195,7 +200,10 @@ function StudyPages({ page, level, learner, cards, records, locked, track, sound
             <p className="kicker">German vocabulary <span className="intro-level">{level}</span></p>
             <h1>Home</h1>
           </div>
-          <a className="outline" href="#practice">Go to practice</a>
+          <div className="a1-actions">
+            <a className="outline" href="#practice">Go to practice</a>
+            <a className="primary" href="#learn">Learn A1</a>
+          </div>
         </div>
         <Challenges cards={a1Cards} {...{ records, progress, sound }} disabled={saving || !ready}
           onSignIn={signedIn ? null : onSignIn} />
