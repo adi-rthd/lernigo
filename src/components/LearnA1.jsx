@@ -31,6 +31,13 @@ export default function LearnA1({ lessonId, learner }) {
   const index = course.findIndex(lesson => lesson.id === lessonId);
   const lesson = course[index];
   const next = course[index + 1];
+  const activeUnit = lesson?.number ?? null;
+  const [unitMenu, setUnitMenu] = useState({ lessonId, expanded: activeUnit });
+  const expandedUnit = unitMenu.lessonId === lessonId ? unitMenu.expanded : activeUnit;
+
+  if (unitMenu.lessonId !== lessonId) {
+    setUnitMenu({ lessonId, expanded: activeUnit });
+  }
 
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
@@ -59,20 +66,32 @@ export default function LearnA1({ lessonId, learner }) {
         <nav id="a1-topic-navigation" aria-label="A1 course topics" data-open={topicsOpen}>
           <a className="a1-overview-link" href="#learn" aria-current={lesson ? undefined : 'page'}
             onClick={() => selectTopic(undefined)}>Course overview</a>
-          {units.map((unit, i) => <div className="a1-topic-group" key={unit.title}>
-            <h3>Unit {i + 1} · {unit.title}</h3>
-            <ul className="a1-lesson-list">
-              {course.filter(item => item.unit === unit).map(item => <li key={item.id}>
-                <a href={'#learn/' + item.id} aria-current={lesson?.id === item.id ? 'page' : undefined}
-                  onClick={() => selectTopic(item.id)}>
-                  <span>{item.title}</span>
-                  {Object.hasOwn(results, item.id) && <small aria-label={results[item.id] + ' of ' + item.practice.length + ' correct, best score'}>
-                    {results[item.id]}/{item.practice.length}
-                  </small>}
-                </a>
-              </li>)}
-            </ul>
-          </div>)}
+          {units.map((unit, i) => {
+            const number = i + 1;
+            const expanded = expandedUnit === number;
+            const listId = 'a1-unit-topics-' + number;
+
+            return <div className="a1-topic-group" key={unit.title}>
+              <h3>
+                <button type="button" className="a1-unit-toggle"
+                  aria-expanded={expanded} aria-controls={listId}
+                  onClick={() => setUnitMenu({ lessonId, expanded: expanded ? null : number })}>
+                  Unit {number} · {unit.title}
+                </button>
+              </h3>
+              <ul className="a1-lesson-list" id={listId} hidden={!expanded}>
+                {course.filter(item => item.unit === unit).map(item => <li key={item.id}>
+                  <a href={'#learn/' + item.id} aria-current={lesson?.id === item.id ? 'page' : undefined}
+                    onClick={() => selectTopic(item.id)}>
+                    <span>{item.title}</span>
+                    {Object.hasOwn(results, item.id) && <small aria-label={results[item.id] + ' of ' + item.practice.length + ' correct, best score'}>
+                      {results[item.id]}/{item.practice.length}
+                    </small>}
+                  </a>
+                </li>)}
+              </ul>
+            </div>;
+          })}
         </nav>
       </aside>
       <div className="a1-content">

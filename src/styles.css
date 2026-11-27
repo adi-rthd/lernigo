@@ -504,9 +504,36 @@ dialog::backdrop { background: var(--backdrop); }
 }
 .a1-sidebar-title { padding: 4px 8px 10px; color: var(--forest-deep); }
 .a1-topic-toggle { display: none; }
-.a1-topic-group { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
-.a1-topic-group h3 { margin: 0 8px 5px; color: var(--forest-deep); font-size: .83rem; }
-.a1-lesson-list { margin: 0; padding: 0; list-style: none; }
+.a1-topic-group { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
+.a1-topic-group h3 { margin: 0; font-size: .83rem; }
+.a1-unit-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--forest-deep);
+  font-weight: 700;
+  text-align: left;
+}
+.a1-unit-toggle:hover, .a1-unit-toggle[aria-expanded='true'] { background: var(--tint); }
+.a1-unit-toggle::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  margin-right: 3px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(-45deg);
+}
+.a1-unit-toggle[aria-expanded='true']::after { transform: translateY(-2px) rotate(45deg); }
+.a1-lesson-list { margin: 3px 0 0 8px; padding: 0; list-style: none; }
 .a1-sidebar a {
   display: flex;
   align-items: center;
